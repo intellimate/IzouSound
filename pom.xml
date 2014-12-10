@@ -4,17 +4,17 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId></groupId>
-    <artifactId></artifactId>
+    <groupId>jundl77.izou.izousound</groupId>
+    <artifactId>izousound</artifactId>
     <packaging>jar</packaging>
-    <version></version>
-    <name></name>
+    <version>0.1</version>
+    <name>Izou Sound</name>
 
     <properties>
-        <plugin.id></plugin.id>
-        <plugin.class>path.to.the.zipfileManager</plugin.class>
-        <plugin.version></plugin.version>
-        <plugin.provider></plugin.provider>
+        <plugin.id>jundl77.izou.izousound</plugin.id>
+        <plugin.class>jundl77.izou.izousound.zipfileManager</plugin.class>
+        <plugin.version>0.1</plugin.version>
+        <plugin.provider>Julian Brendl</plugin.provider>
         <plugin.dependencies />
     </properties>
 
@@ -28,6 +28,21 @@
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
             <version>2.6</version>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.soundlibs</groupId>
+            <artifactId>tritonus-share</artifactId>
+            <version>0.3.7-2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.soundlibs</groupId>
+            <artifactId>mp3spi</artifactId>
+            <version>1.9.5-1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.soundlibs</groupId>
+            <artifactId>vorbisspi</artifactId>
+            <version>1.0.3-1</version>
         </dependency>
     </dependencies>
 
