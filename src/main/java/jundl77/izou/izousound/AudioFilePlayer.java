@@ -1,31 +1,43 @@
 package jundl77.izou.izousound;
 
+import intellimate.izou.system.Context;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class AudioFilePlayer {
+    private ExecutorService executorService;
     private SoundObject soundObject;
+    private Context context;
 
     public static void main(String[] args) {
-        AudioFilePlayer audioFilePlayer = new AudioFilePlayer();
-
+        AudioFilePlayer audioFilePlayer = new AudioFilePlayer(null);
+        List<String> paths = new ArrayList<>();
+        paths.add("./src/main/resources/selfie.mp3");
+        audioFilePlayer.play(paths);
         while (true) {
-            audioFilePlayer.play("./src/main/resources/test.wav");
+            audioFilePlayer.resume();
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            audioFilePlayer.pause();
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            audioFilePlayer.stop();
+            //audioFilePlayer.play("./src/main/resources/selfie.mp3");
+            audioFilePlayer.resume();
             try {
-                Thread.sleep(1000);
+                Thread.sleep(5000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            audioFilePlayer.play("./src/main/resources/selfie.mp3");
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            audioFilePlayer.stop();
+            audioFilePlayer.pause();
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -34,16 +46,26 @@ public class AudioFilePlayer {
         }
     }
 
+    public AudioFilePlayer(Context context) {
+        this.context = context;
+        this.soundObject = new SoundObject(context);
+        executorService = Executors.newSingleThreadExecutor();
+        executorService.execute(soundObject);
+    }
+
+    public void play(List<String> filePath) {
+        if (!soundObject.isActive()) {
+            soundObject.addSoundFiles(filePath);
+        }
+    }
+
     /**
      *
-     * @param filePath
      */
-    public void play(String filePath) {
-        SoundObject soundObject = new SoundObject();
-        this.soundObject = soundObject;
-        Thread thread = new Thread(soundObject);
-        soundObject.setFilePath(filePath);
-        thread.start();
+    public void resume() {
+        if (soundObject.isPaused()) {
+            soundObject.resumeSound();
+        }
     }
 
     /**
@@ -52,4 +74,10 @@ public class AudioFilePlayer {
     public void stop() {
         soundObject.stopSound();
     }
+
+    public void pause() {
+        soundObject.pauseSound();
+    }
+
+    public void setVolume() {}
 }
