@@ -17,31 +17,16 @@ public class SoundOutputPlugin extends OutputPlugin<SoundOutputData> {
 
     @Override
     public void renderFinalOutput() {
-        AudioFilePlayer audioFilePlayer = new AudioFilePlayer();
+        AudioFilePlayer audioFilePlayer = new AudioFilePlayer(null);
 
         for (SoundOutputData outputData : getTDoneList()) {
-            for (String loc : outputData.getLocations()) {
-                if (!new File(loc).exists()) {
-                    getContext().logger.getLogger().warn("Path " + loc + "does not exist");
-                    continue;
-                }
-
-                if (new File(loc).isDirectory()) {
-                    File[] files = new File(loc).listFiles();
-                    if (files == null) continue;
-                    for(File file: files) {
-                        handleFile(audioFilePlayer, file.getAbsolutePath());
-                    }
-                }
-
-                handleFile(audioFilePlayer, loc);
-            }
+            audioFilePlayer.play(outputData.getPaths());
         }
     }
 
     private void handleFile(AudioFilePlayer audioFilePlayer, String loc) {
         if (new File(loc).isFile() && (loc.endsWith(".mp3") || loc.endsWith(".wav"))) {
-            audioFilePlayer.play(loc);
+            //audioFilePlayer.initPlayer(loc);
         }
     }
 }
