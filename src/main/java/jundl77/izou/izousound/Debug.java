@@ -1,3 +1,5 @@
+package jundl77.izou.izousound;
+
 import intellimate.izou.addon.AddOn;
 import intellimate.izou.main.Main;
 
@@ -9,7 +11,7 @@ import java.util.LinkedList;
 public class Debug {
     public static void main(String[] args) {
         LinkedList<AddOn> addOns = new LinkedList<>();
-
-        Main main = new Main(addOns, true);
+        addOns.add(new SoundOutputAddOn());
+        Main main = new Main(addOns);
     }
 }

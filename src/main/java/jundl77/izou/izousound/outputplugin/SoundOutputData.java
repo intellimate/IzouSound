@@ -1,4 +1,4 @@
-package jundl77.izou.izousound;
+package jundl77.izou.izousound.outputplugin;
 
 import java.util.List;
 
@@ -8,8 +8,8 @@ import java.util.List;
 public class SoundOutputData {
     private List<String> paths;
 
-    public SoundOutputData(List<String> locations) {
-        this.paths = locations;
+    public SoundOutputData(List<String> paths) {
+        this.paths = paths;
     }
 
     public List<String> getPaths() {
