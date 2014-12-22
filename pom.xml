@@ -12,10 +12,10 @@
 
     <properties>
         <plugin.id>jundl77.izou.izousound</plugin.id>
-        <plugin.class>jundl77.izou.izousound.zipfileManager</plugin.class>
-        <plugin.version>0.1</plugin.version>
+        <plugin.class>jundl77.izou.izousound.ZipFileManager</plugin.class>
+        <plugin.version>0.5</plugin.version>
         <plugin.provider>Julian Brendl</plugin.provider>
-        <plugin.dependencies />
+        <plugin.dependencies>com.googlecode.soundlibs</plugin.dependencies>
     </properties>
 
     <dependencies>
@@ -23,11 +23,6 @@
             <groupId>intellimate.izou</groupId>
             <artifactId>Izou</artifactId>
             <version>0.9.9.8-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>2.6</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.soundlibs</groupId>
@@ -43,6 +38,11 @@
             <groupId>com.googlecode.soundlibs</groupId>
             <artifactId>vorbisspi</artifactId>
             <version>1.0.3-1</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.6</version>
         </dependency>
     </dependencies>
 
