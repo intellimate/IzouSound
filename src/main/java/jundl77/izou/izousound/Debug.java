@@ -11,7 +11,7 @@ import java.util.LinkedList;
 public class Debug {
     public static void main(String[] args) {
         LinkedList<AddOn> addOns = new LinkedList<>();
-        addOns.add(new SoundOutputAddOn());
+        addOns.add(new SoundAddOn());
         Main main = new Main(addOns);
     }
 }

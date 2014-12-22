@@ -11,10 +11,10 @@ import jundl77.izou.izousound.outputplugin.SoundOutputPlugin;
 /**
  * Created by julianbrendl on 12/21/14.
  */
-public class SoundOutputAddOn extends AddOn {
-    public static final String ID = SoundOutputAddOn.class.getCanonicalName();
+public class SoundAddOn extends AddOn {
+    public static final String ID = SoundAddOn.class.getCanonicalName();
 
-    public SoundOutputAddOn() {
+    public SoundAddOn() {
         super(ID);
     }
 
@@ -48,5 +48,10 @@ public class SoundOutputAddOn extends AddOn {
     @Override
     public OutputExtension[] registerOutputExtension() {
         return new OutputExtension[0];
+    }
+
+    @Override
+    public String getID() {
+        return ID;
     }
 }
