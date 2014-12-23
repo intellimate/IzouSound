@@ -15,7 +15,7 @@
         <plugin.class>jundl77.izou.izousound.ZipFileManager</plugin.class>
         <plugin.version>0.5</plugin.version>
         <plugin.provider>Julian Brendl</plugin.provider>
-        <plugin.dependencies>com.googlecode.soundlibs</plugin.dependencies>
+        <plugin.dependencies/>
     </properties>
 
     <dependencies>

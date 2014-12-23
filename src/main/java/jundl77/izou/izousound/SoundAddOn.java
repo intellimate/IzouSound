@@ -7,11 +7,12 @@ import intellimate.izou.events.EventsController;
 import intellimate.izou.output.OutputExtension;
 import intellimate.izou.output.OutputPlugin;
 import jundl77.izou.izousound.outputplugin.SoundOutputPlugin;
+import ro.fortsoft.pf4j.Extension;
 
-/**
- * Created by julianbrendl on 12/21/14.
- */
+@Extension
 public class SoundAddOn extends AddOn {
+
+    @SuppressWarnings("WeakerAccess")
     public static final String ID = SoundAddOn.class.getCanonicalName();
 
     public SoundAddOn() {
@@ -25,17 +26,17 @@ public class SoundAddOn extends AddOn {
 
     @Override
     public Activator[] registerActivator() {
-        return new Activator[0];
+        return null;
     }
 
     @Override
     public ContentGenerator[] registerContentGenerator() {
-        return new ContentGenerator[0];
+        return null;
     }
 
     @Override
     public EventsController[] registerEventController() {
-        return new EventsController[0];
+        return null;
     }
 
     @Override
@@ -47,9 +48,17 @@ public class SoundAddOn extends AddOn {
 
     @Override
     public OutputExtension[] registerOutputExtension() {
-        return new OutputExtension[0];
+        return null;
     }
 
+    /**
+     * An ID must always be unique.
+     * A Class like Activator or OutputPlugin can just provide their .class.getCanonicalName()
+     * If you have to implement this interface multiple times, just concatenate unique Strings to
+     * .class.getCanonicalName()
+     *
+     * @return A String containing an ID
+     */
     @Override
     public String getID() {
         return ID;
