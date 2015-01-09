@@ -1,9 +1,0 @@
-# Created by .gitignore support plugin (hsz.mobi)
-build
-target
-.settings
-.project
-.classpath
-.iml
-IzouAddOn.iml
-.idea
