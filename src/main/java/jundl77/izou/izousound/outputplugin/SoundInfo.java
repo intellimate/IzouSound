@@ -1,5 +1,7 @@
 package jundl77.izou.izousound.outputplugin;
 
+import java.io.File;
+
 /**
  * SoundInfo contains general data about the sound file for which it is created
  *
@@ -7,21 +9,31 @@ package jundl77.izou.izousound.outputplugin;
  * @version 1.0
  */
 class SoundInfo {
-    public String name;
-    public String path;
-    public int startTime;
-    public int stopTime;
+    private String name;
+    private String path;
+    private int startTime;
+    private int stopTime;
+
 
     /**
      * Creates a new SoundInfo object, which contains general information about the sound.
      *
-     * @param name the name of the sound
+     * @param path the path to the sound file
+     */
+    public SoundInfo(String path) {
+        this(path, -1, -1);
+    }
+
+    /**
+     * Creates a new SoundInfo object, which contains general information about the sound.
+     *
      * @param path the path to the sound file
      * @param startTime the start time of the sound file (in milliseconds), if -1 it starts from the beginning
      * @param stopTime the stop time of the sound file (in milliseconds), if -1 it stops at the end
      */
-    public SoundInfo(String name, String path, int startTime, int stopTime) {
-        this.name = name;
+    public SoundInfo(String path, int startTime, int stopTime) {
+        String[] fileParts = path.split(File.separator);
+        this.name = fileParts[fileParts.length - 1];
         this.path = path;
         this.startTime = startTime;
         this.stopTime = stopTime;

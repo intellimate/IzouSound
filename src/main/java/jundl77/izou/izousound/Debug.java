@@ -15,8 +15,19 @@ public class Debug {
 //        Main main = new Main(addOns);
 
         AudioFilePlayer a = new AudioFilePlayer(null);
+        Thread t = new Thread(a);
         List<String> list = new ArrayList<>();
-        list.add("./resources/IzouClock/mama-geb.mp3");
-        a.play(list);
+        list.add("/Users/julianbrendl/music");
+        a.addSoundFiles(list);
+        t.start();
+
+        while (true) {
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            a.previousFile();
+        }
     }
 }

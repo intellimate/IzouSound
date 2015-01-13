@@ -31,11 +31,11 @@ class SoundIdentityFactory {
     /**
      * Creates and registers and returns a new SoundIdentity with the name of the song
      *
-     * @param name The name of the song for which the sound identity was created
+     * @param soundInfo The {@link SoundInfo} object for the song for which the sound identity was created
      * @return The new sound identity
      */
-    public SoundIdentity make(String name) {
-        SoundIdentity soundIdentity =  new SoundIdentity(fileIdentityId, name);
+    public SoundIdentity make(SoundInfo soundInfo) {
+        SoundIdentity soundIdentity =  new SoundIdentity(fileIdentityId, soundInfo);
         soundIdentities.put(fileIdentityId, soundIdentity);
         fileIdentityId++;
         return soundIdentity;

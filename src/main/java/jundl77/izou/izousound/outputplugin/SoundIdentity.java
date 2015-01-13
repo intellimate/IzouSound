@@ -5,7 +5,6 @@ package jundl77.izou.izousound.outputplugin;
  */
 class SoundIdentity {
     private int id;
-    private String name;
     private SoundInfo soundInfo;
 
     /**
@@ -13,12 +12,11 @@ class SoundIdentity {
      * as to allow jumping around sounds.
      *
      * @param id the track number (or ID)
-     * @param name the name of the sound
-     * @param soundInfo the soundInfo object
+     * @param soundInfo The {@link SoundInfo} object for the song for which the sound identity was created
      */
-    public SoundIdentity(int id, String name, SoundInfo soundInfo) {
+    public SoundIdentity(int id, SoundInfo soundInfo) {
         this.id = id;
-        this.name = name;
+        this.soundInfo = soundInfo;
     }
 
     /**
@@ -30,15 +28,6 @@ class SoundIdentity {
      */
     public int getId() {
         return id;
-    }
-
-    /**
-     * Gets name of the song
-     *
-     * @return name of the song
-     */
-    public String getName() {
-        return name;
     }
 
     /**

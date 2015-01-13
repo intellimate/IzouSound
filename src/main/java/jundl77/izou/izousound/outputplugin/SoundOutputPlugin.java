@@ -46,22 +46,22 @@ public class SoundOutputPlugin extends OutputPlugin<SoundOutputData> implements 
     public void eventFired(Event event) {
         switch (event.getID()) {
             case NEXT_SOUND_EVENT_ID:
-                audioFilePlayer.nextSound();
+                //audioFilePlayer.nextSound();
                 break;
             case PREVIOUS_SOUND_EVENT_ID:
-                audioFilePlayer.previousSound();
+                //audioFilePlayer.previousSound();
                 break;
             case RESTART_SOUND_EVENT_ID:
-                audioFilePlayer.restartSound();
+                //audioFilePlayer.restartSound();
                 break;
             case RESUME_EVENT_ID:
-                audioFilePlayer.resume();
+                //audioFilePlayer.resume();
                 break;
             case PAUSE_EVENT_ID:
-                audioFilePlayer.pause();
+                //audioFilePlayer.pause();
                 break;
             case STOP_EVENT_ID:
-                audioFilePlayer.stop();
+                //audioFilePlayer.stop();
                 break;
         }
     }
@@ -69,7 +69,7 @@ public class SoundOutputPlugin extends OutputPlugin<SoundOutputData> implements 
     @Override
     public void renderFinalOutput() {
         for (SoundOutputData outputData : getTDoneList()) {
-            audioFilePlayer.play(outputData.getPaths());
+            //audioFilePlayer.play(outputData.getPaths());
         }
     }
 }
