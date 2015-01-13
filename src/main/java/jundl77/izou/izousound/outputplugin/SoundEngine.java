@@ -8,11 +8,10 @@ import javafx.util.Duration;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -24,11 +23,10 @@ import java.util.concurrent.locks.ReentrantLock;
  * not be touched.
  */
 class SoundEngine {
-    private BlockingQueue<List<SoundInfo>> pathsBlockingQueue;
     private MediaPlayer mediaPlayer;
     private Media media;
     private SoundIdentityFactory soundIdentityFactory;
-    private HashMap<SoundIdentity, String> soundFileMap;
+    private HashMap<Integer, SoundIdentity> soundFileMap;
     private SoundIdentity currentSound;
     private AtomicInteger playIndex;
     private Context context;
@@ -41,7 +39,6 @@ class SoundEngine {
     public SoundEngine(Context context) {
         playIndex = new AtomicInteger();
         JFXPanel panel = new JFXPanel();
-        pathsBlockingQueue = new LinkedBlockingQueue<>();
         this.context = context;
         soundFileMap = new HashMap<>();
         soundIdentityFactory = new SoundIdentityFactory();
@@ -50,7 +47,7 @@ class SoundEngine {
     }
 
     /**
-     * Adds a new List with sound files to the blocking queue that will be processed as soon as possible
+     * Adds a new list with sound files to the blocking queue that will be processed as soon as possible
      *
      * @param soundFilePaths the list of paths to sound files that should be played
      * @param startTime the start time of the sound file (in milliseconds)
@@ -64,11 +61,25 @@ class SoundEngine {
             soundInfos.add(soundInfo);
         }
 
-        try {
-            pathsBlockingQueue.put(soundInfos);
-        } catch (InterruptedException e) {
-            context.logger.getLogger().error("Failed to add sound file paths to blocking queue", e);
+        run(soundInfos);
+    }
+
+    /**
+     * Adds a new list with sound files to the blocking queue that will be processed as soon as possible
+     *
+     * @param soundURLs the list of URLs to sound files that should be played
+     * @param startTime the start time of the sound file (in milliseconds)
+     * @param stopTime the stop time of the sound file  (in milliseconds)
+     */
+    public void addSoundURL(List<URL> soundURLs, int startTime, int stopTime) {
+        List<SoundInfo> soundInfos = new ArrayList<>();
+
+        for (URL url : soundURLs) {
+            SoundInfo soundInfo = new SoundInfo(url, startTime, stopTime);
+            soundInfos.add(soundInfo);
         }
+
+        run(soundInfos);
     }
 
     /**
@@ -199,20 +210,6 @@ class SoundEngine {
     }
 
     /**
-     * Handles blocking queue behavior
-     *
-     * @return list of paths that should be processed next
-     */
-    private List<SoundInfo> handleBlockingQueue() {
-        try {
-            return pathsBlockingQueue.take();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
      * Plays the sound at {@code path}
      *
      * @param soundId The id of the sound to be played
@@ -220,15 +217,40 @@ class SoundEngine {
      */
     private void playSoundFile(SoundIdentity soundId) throws IndexOutOfBoundsException {
         currentSound = soundId;
-        String path = soundFileMap.get(soundId);
+        if (soundId.getSoundInfo().getPath() != null) {
+            String path = soundId.getSoundInfo().getPath();
 
-        File file = new File(path);
-        try {
-            media = new Media(file.toURI().toURL().toExternalForm());
-        } catch (MalformedURLException e) {
-            context.logger.getLogger().error("file to url conversion issue", e);
+            File file = new File(path);
+            try {
+                media = new Media(file.toURI().toURL().toExternalForm());
+            } catch (MalformedURLException e) {
+                context.logger.getLogger().error("file to url conversion issue", e);
+            }
+        } else if (soundId.getSoundInfo().getURL() != null) {
+            media = new Media(soundId.getSoundInfo().getURL().toExternalForm());
         }
 
+        prepareMediaPlayer();
+
+        setPlayDuration(soundId);
+
+        currentSound = soundId;
+        mediaPlayer.play();
+        //context.logger.getLogger().debug("Started sound playback of: " + soundId.getSoundInfo().getName());
+
+        mediaPlayer.setOnEndOfMedia(() -> {
+            //context.logger.getLogger().debug("Finished sound playback of: " + soundId.getSoundInfo().getName());
+            if (playIndex.get() > soundFileMap.size()) {
+                return;
+            }
+            playIndex.incrementAndGet();
+            SoundIdentity id = soundFileMap.get(playIndex.intValue());
+            mediaPlayer.dispose();
+            playSoundFile(id);
+        });
+    }
+
+    private void prepareMediaPlayer() {
         mediaPlayer = new MediaPlayer(media);
 
         final Lock lock = new ReentrantLock();
@@ -249,23 +271,6 @@ class SoundEngine {
         lock.unlock();
 
         mediaPlayer.setOnReady(null);
-
-        setPlayDuration(soundId);
-
-        currentSound = soundId;
-        mediaPlayer.play();
-        //context.logger.getLogger().debug("Started sound playback of: " + soundId.getSoundInfo().getName());
-
-        mediaPlayer.setOnEndOfMedia(() -> {
-            //context.logger.getLogger().debug("Finished sound playback of: " + soundId.getSoundInfo().getName());
-            if (playIndex.get() > soundFileMap.size()) {
-                return;
-            }
-            playIndex.incrementAndGet();
-            SoundIdentity id = soundIdentityFactory.getSoundIdentity(playIndex.get());
-            mediaPlayer.dispose();
-            playSoundFile(id);
-        });
     }
 
     private void setPlayDuration(SoundIdentity soundId) {
@@ -296,7 +301,8 @@ class SoundEngine {
      * @param soundInfo The {@link SoundInfo} object for the song for which the sound identity was created
      */
     private void addToQueuedSongs(SoundInfo soundInfo) {
-        soundFileMap.put(soundIdentityFactory.make(soundInfo), soundInfo.getPath());
+        SoundIdentity soundIdentity = soundIdentityFactory.make(soundInfo);
+        soundFileMap.put(soundIdentity.getId(), soundIdentity);
     }
 
     /**
@@ -324,13 +330,19 @@ class SoundEngine {
     }
 
     private void fillQueuedSoundFiles(List<SoundInfo> fileInfos) {
-        for (SoundInfo soundInfo : fileInfos) {
-            String filePath = soundInfo.getPath();
-            if (!new File(filePath).exists()) {
-                context.logger.getLogger().error(filePath + "does not exists - Unable to play sound");
-                continue;
+        if (fileInfos.get(0).getPath() != null) {
+            for (SoundInfo soundInfo : fileInfos) {
+                String filePath = soundInfo.getPath();
+                if (!new File(filePath).exists()) {
+                    context.logger.getLogger().error(filePath + "does not exists - Unable to play sound");
+                    continue;
+                }
+                recursiveSoundFileSearch(soundInfo);
             }
-            recursiveSoundFileSearch(soundInfo);
+        } else if (fileInfos.get(0).getURL() != null) {
+            for (SoundInfo soundInfo : fileInfos) {
+                addToQueuedSongs(soundInfo);
+            }
         }
     }
 
@@ -344,13 +356,12 @@ class SoundEngine {
     /**
      * Run method for sound object, gets started on instantiation and waits for paths to process
      */
-    public void run() {
-        List<SoundInfo> filePaths = handleBlockingQueue();
+    public void run(List<SoundInfo> soundInfos) {
         resetSession();
 
         playIndex.set(0);
-        fillQueuedSoundFiles(filePaths);
-        SoundIdentity id = soundIdentityFactory.getSoundIdentity(playIndex.get());
+        fillQueuedSoundFiles(soundInfos);
+        SoundIdentity id = soundFileMap.get(playIndex.intValue());
         playSoundFile(id);
     }
 }

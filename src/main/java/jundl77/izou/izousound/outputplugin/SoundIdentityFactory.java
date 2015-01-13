@@ -1,13 +1,10 @@
 package jundl77.izou.izousound.outputplugin;
 
-import java.util.HashMap;
-
 /**
  * {@code SoundIdentityFactory} handles sound file registration for each playback session
  */
 class SoundIdentityFactory {
     private int fileIdentityId;
-    private HashMap<Integer, SoundIdentity> soundIdentities;
 
     /**
      * Creates a new {@code SoundIdentityFactory} which handles playback-session order.
@@ -17,7 +14,6 @@ class SoundIdentityFactory {
      */
     public SoundIdentityFactory() {
         fileIdentityId = 0;
-        soundIdentities = new HashMap<>();
     }
 
     /**
@@ -25,7 +21,6 @@ class SoundIdentityFactory {
      */
     public void startNewSession() {
         fileIdentityId = 0;
-        soundIdentities.clear();
     }
 
     /**
@@ -36,31 +31,16 @@ class SoundIdentityFactory {
      */
     public SoundIdentity make(SoundInfo soundInfo) {
         SoundIdentity soundIdentity =  new SoundIdentity(fileIdentityId, soundInfo);
-        soundIdentities.put(fileIdentityId, soundIdentity);
         fileIdentityId++;
         return soundIdentity;
     }
 
     /**
-     * Gets the sound identity in position with key {@code i} of the HashMap
+     * Gets the current counter value
      *
-     * @param i The index/key of the sound identity to get
-     * @return The sound identity with key {@code i}
+     * @return the current counter value
      */
-    public SoundIdentity getSoundIdentity(int i) {
-        if (soundIdentities.containsKey(i)) {
-            return soundIdentities.get(i);
-        } else {
-            throw new ArrayIndexOutOfBoundsException("Index is out of bounds");
-        }
-    }
-
-    /**
-     * Gets number of registered songs
-     *
-     * @return The number of registered songs
-     */
-    public int getNumberOfSounds() {
-        return soundIdentities.size();
+    public int getCurrentCounter() {
+        return fileIdentityId;
     }
 }

@@ -41,7 +41,7 @@ public class SoundOutputPlugin extends OutputPlugin<SoundOutputData> implements 
         eventList.add(RESUME_EVENT_ID);
         eventList.add(PAUSE_EVENT_ID);
         eventList.add(STOP_EVENT_ID);
-        //eve
+        eventList.add(VOLUME_EVENT_ID);
         context.events.registerEventListener(eventList, this);
     }
 
