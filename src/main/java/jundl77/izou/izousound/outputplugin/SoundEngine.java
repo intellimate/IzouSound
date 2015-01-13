@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -21,15 +23,14 @@ import java.util.concurrent.locks.ReentrantLock;
  * no reason for using this class, as it is the engine that is running behind the AudioFilePlayer and should therefore
  * not be touched.
  */
-class SoundEngine implements Runnable {
+class SoundEngine {
     private BlockingQueue<List<SoundInfo>> pathsBlockingQueue;
     private MediaPlayer mediaPlayer;
     private Media media;
     private SoundIdentityFactory soundIdentityFactory;
     private HashMap<SoundIdentity, String> soundFileMap;
     private SoundIdentity currentSound;
-    private boolean validSession;
-    private int playIndex;
+    private AtomicInteger playIndex;
     private Context context;
 
     /**
@@ -38,14 +39,14 @@ class SoundEngine implements Runnable {
      * @param context the Context of the output-plugin
      */
     public SoundEngine(Context context) {
+        playIndex = new AtomicInteger();
         JFXPanel panel = new JFXPanel();
-        validSession = true;
         pathsBlockingQueue = new LinkedBlockingQueue<>();
         this.context = context;
         soundFileMap = new HashMap<>();
         soundIdentityFactory = new SoundIdentityFactory();
         currentSound = null;
-        playIndex = 0;
+        playIndex.set(-1);
     }
 
     /**
@@ -86,15 +87,20 @@ class SoundEngine implements Runnable {
      * @return state of mediaPlayer
      */
     public String getState() {
+        if (mediaPlayer == null) {
+            return null;
+        }
         return mediaPlayer.getStatus().toString();
     }
 
     /**
      * Resume the sound if there is sound to resume and if it is paused
      */
-    public void resumeSound() throws NullPointerException {
-        if (mediaPlayer.getStatus() == MediaPlayer.Status.PAUSED) {
+    public void resumeSound() throws IllegalStateException {
+        if (getState().equals("PAUSED")) {
             mediaPlayer.play();
+        } else {
+            throw new IllegalStateException("sound is not paused, so it cannot be resumed");
         }
     }
 
@@ -108,31 +114,39 @@ class SoundEngine implements Runnable {
     }
 
     /**
-     * Stops playback for entire session, the task will go back to the blockingqueue
+     * Stops playback for entire session, the task will go back to the blocking-queue
      */
     public void stopSession() {
-        validSession = false;
+        if (getState() != null) {
+            mediaPlayer.dispose();
+            resetSession();
+        }
     }
 
     /**
      * Pauses sound
      */
     public void pauseSound() {
-        mediaPlayer.pause();
+        if (getState() != null) {
+            mediaPlayer.pause();
+        }
     }
 
     /**
      * Jumps to next sound-file if there is one, else jumps back to the start
      */
     public void nextFile() {
-        if (playIndex < soundFileMap.size() - 1) {
+        if (getState() == null) {
+            return;
+        }
+
+        if (playIndex.get() < soundFileMap.size() - 1) {
             //no need to increment index because loop does it on its own
             stopSound();
         } else {
-            stopSound();
-
             //the index is set to -1 and not 0 because the loop will increment the index to 0 on its own
-            playIndex = -1;
+            playIndex.set(-1);
+            stopSound();
         }
     }
 
@@ -140,26 +154,34 @@ class SoundEngine implements Runnable {
      * Jumps back to beginning of current sound file if one is playing
      */
     public void restartFile() {
-        stopSound();
+        if (getState() == null) {
+            return;
+        }
 
         //index is decremented by one, yet the loop will bring it back up to the same number, causing the sound to
         //start over
-        playIndex--;
+        playIndex.decrementAndGet();
+
+        stopSound();
     }
 
     /**
      * Jumps to previous sound-file if there is one, else jump to last sound-file
      */
     public void previousFile() {
-        if (playIndex > 0) {
-            stopSound();
+        if (getState() == null) {
+            return;
+        }
 
+        if (playIndex.get() > 0) {
             //the index is decreased by 2 and not 0 because the loop will increment the index to 0 on its own
-            playIndex -= 2;
-        } else {
-            stopSound();
+            playIndex.decrementAndGet();
+            playIndex.decrementAndGet();
 
-            playIndex = soundFileMap.size() - 2;
+            stopSound();
+        } else {
+            playIndex.set(soundFileMap.size() - 2);
+            stopSound();
         }
     }
 
@@ -169,6 +191,10 @@ class SoundEngine implements Runnable {
      * @param volume volume level (from 0 - 100)
      */
     public void controlVolume(double volume) {
+        if (getState() == null) {
+            return;
+        }
+
         mediaPlayer.setVolume(volume / 100);
     }
 
@@ -200,43 +226,49 @@ class SoundEngine implements Runnable {
         try {
             media = new Media(file.toURI().toURL().toExternalForm());
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            context.logger.getLogger().error("file to url conversion issue", e);
         }
 
         mediaPlayer = new MediaPlayer(media);
 
+        final Lock lock = new ReentrantLock();
+        final Condition ready = lock.newCondition();
+
+        mediaPlayer.setOnReady(() -> {
+            lock.lock();
+                ready.signal();
+            lock.unlock();
+        });
+
+        lock.lock();
+        try {
+            ready.await();
+        } catch (InterruptedException e) {
+            context.logger.getLogger().warn("thread interrupted", e);
+        }
+        lock.unlock();
+
+        mediaPlayer.setOnReady(null);
+
         setPlayDuration(soundId);
 
+        currentSound = soundId;
         mediaPlayer.play();
         //context.logger.getLogger().debug("Started sound playback of: " + soundId.getSoundInfo().getName());
 
-        final Lock lock = new ReentrantLock();
         mediaPlayer.setOnEndOfMedia(() -> {
-            synchronized (lock) {
-                lock.notify();
+            //context.logger.getLogger().debug("Finished sound playback of: " + soundId.getSoundInfo().getName());
+            if (playIndex.get() > soundFileMap.size()) {
+                return;
             }
+            playIndex.incrementAndGet();
+            SoundIdentity id = soundIdentityFactory.getSoundIdentity(playIndex.get());
+            mediaPlayer.dispose();
+            playSoundFile(id);
         });
-
-        synchronized (lock) {
-            try {
-                lock.wait();
-                //context.logger.getLogger().debug("Finished sound playback of: " + soundId.getSoundInfo().getName());
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     private void setPlayDuration(SoundIdentity soundId) {
-        double startTime = System.currentTimeMillis();
-        while (mediaPlayer.getStatus() != MediaPlayer.Status.READY) {
-            double currentTime = System.currentTimeMillis();
-
-            if (currentTime - startTime > 500) {
-                break;
-            }
-        }
-
         double duration = media.getDuration().toMillis();
 
         if (soundId.getSoundInfo().getStartTime() == -1) {
@@ -303,7 +335,6 @@ class SoundEngine implements Runnable {
     }
 
     private void resetSession() {
-        validSession = true;
         soundIdentityFactory.startNewSession();
         soundFileMap.clear();
         mediaPlayer = null;
@@ -313,25 +344,13 @@ class SoundEngine implements Runnable {
     /**
      * Run method for sound object, gets started on instantiation and waits for paths to process
      */
-    @Override
     public void run() {
-        while (true) {
-            List<SoundInfo> filePaths = handleBlockingQueue();
-            resetSession();
+        List<SoundInfo> filePaths = handleBlockingQueue();
+        resetSession();
 
-            fillQueuedSoundFiles(filePaths);
-
-            for (playIndex = 0; playIndex < soundFileMap.size() && validSession; playIndex++) {
-                SoundIdentity id = soundIdentityFactory.getSoundIdentity(playIndex);
-                mediaPlayer = null;
-                media = null;
-
-                try {
-                    playSoundFile(id);
-                } catch (IndexOutOfBoundsException e) {
-                    context.logger.getLogger().warn("Error while playing: " + id.getSoundInfo().getPath(), e);
-                }
-            }
-        }
+        playIndex.set(0);
+        fillQueuedSoundFiles(filePaths);
+        SoundIdentity id = soundIdentityFactory.getSoundIdentity(playIndex.get());
+        playSoundFile(id);
     }
 }

@@ -26,6 +26,8 @@ public class SoundOutputPlugin extends OutputPlugin<SoundOutputData> implements 
 
     public static final String STOP_EVENT_ID = "IzouSound.Stop";
 
+    public static final String VOLUME_EVENT_ID = "IzouSound.Volume";
+
     public AudioFilePlayer audioFilePlayer;
 
     public SoundOutputPlugin(Context context) {
@@ -39,30 +41,26 @@ public class SoundOutputPlugin extends OutputPlugin<SoundOutputData> implements 
         eventList.add(RESUME_EVENT_ID);
         eventList.add(PAUSE_EVENT_ID);
         eventList.add(STOP_EVENT_ID);
+        //eve
         context.events.registerEventListener(eventList, this);
     }
 
     @Override
     public void eventFired(Event event) {
-        switch (event.getID()) {
-            case NEXT_SOUND_EVENT_ID:
-                //audioFilePlayer.nextSound();
-                break;
-            case PREVIOUS_SOUND_EVENT_ID:
-                //audioFilePlayer.previousSound();
-                break;
-            case RESTART_SOUND_EVENT_ID:
-                //audioFilePlayer.restartSound();
-                break;
-            case RESUME_EVENT_ID:
-                //audioFilePlayer.resume();
-                break;
-            case PAUSE_EVENT_ID:
-                //audioFilePlayer.pause();
-                break;
-            case STOP_EVENT_ID:
-                //audioFilePlayer.stop();
-                break;
+         if (event.containsDescriptor(NEXT_SOUND_EVENT_ID)) {
+             audioFilePlayer.nextSound();
+         } else if (event.containsDescriptor(PREVIOUS_SOUND_EVENT_ID)) {
+             audioFilePlayer.nextSound();
+         } else if (event.containsDescriptor(RESTART_SOUND_EVENT_ID)) {
+             audioFilePlayer.nextSound();
+         } else if (event.containsDescriptor(RESUME_EVENT_ID)) {
+             audioFilePlayer.nextSound();
+         } else if (event.containsDescriptor(PAUSE_EVENT_ID)) {
+             audioFilePlayer.nextSound();
+         } else if (event.containsDescriptor(STOP_EVENT_ID)) {
+             audioFilePlayer.stop();
+         } else if (event.containsDescriptor(VOLUME_EVENT_ID)) {
+            //audioFilePlayer.setVolume(event.getListResourceContainer().;
         }
     }
 

@@ -51,7 +51,7 @@ class SoundIdentityFactory {
         if (soundIdentities.containsKey(i)) {
             return soundIdentities.get(i);
         } else {
-            throw new NullPointerException("Index is out of bounds");
+            throw new ArrayIndexOutOfBoundsException("Index is out of bounds");
         }
     }
 
