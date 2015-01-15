@@ -9,7 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by julianbrendl on 12/10/14.
+ * The SoundOutputPlugin is capable of playing MP3 and various other sound formats. It can take file paths,
+ * or HTTP URLs. Various events can be fired to control the various aspects of the sound playback.
+ *
+ * @author Julian Brendl
+ * @version 1.0
  */
 public class SoundOutputPlugin extends OutputPlugin<SoundOutputData> implements EventListener {
     public static final String ID = SoundOutputPlugin.class.getCanonicalName();
@@ -50,13 +54,13 @@ public class SoundOutputPlugin extends OutputPlugin<SoundOutputData> implements 
          if (event.containsDescriptor(NEXT_SOUND_EVENT_ID)) {
              audioFilePlayer.nextSound();
          } else if (event.containsDescriptor(PREVIOUS_SOUND_EVENT_ID)) {
-             audioFilePlayer.nextSound();
+             audioFilePlayer.previousSound();
          } else if (event.containsDescriptor(RESTART_SOUND_EVENT_ID)) {
-             audioFilePlayer.nextSound();
+             audioFilePlayer.restartSound();
          } else if (event.containsDescriptor(RESUME_EVENT_ID)) {
-             audioFilePlayer.nextSound();
+             audioFilePlayer.resume();
          } else if (event.containsDescriptor(PAUSE_EVENT_ID)) {
-             audioFilePlayer.nextSound();
+             audioFilePlayer.pause();
          } else if (event.containsDescriptor(STOP_EVENT_ID)) {
              audioFilePlayer.stop();
          } else if (event.containsDescriptor(VOLUME_EVENT_ID)) {

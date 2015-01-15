@@ -1,23 +1,34 @@
 package jundl77.izou.izousound;
 
-import intellimate.izou.addon.AddOn;
-import intellimate.izou.main.Main;
+import jundl77.izou.izousound.outputplugin.AudioFilePlayer;
 
-import java.util.LinkedList;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Use this class to debug
  */
 public class Debug {
     public static void main(String[] args) {
-        LinkedList<AddOn> addOns = new LinkedList<>();
-        addOns.add(new SoundAddOn());
-        Main main = new Main(addOns);
+//        LinkedList<AddOn> addOns = new LinkedList<>();
+//        addOns.add(new SoundAddOn());
+//        Main main = new Main(addOns);
 
 //        AudioFilePlayer a = new AudioFilePlayer(null);
 //        List<String> list = new ArrayList<>();
 //        list.add("/Users/julianbrendl/music");
-//        a.play(list);
+//        a.playFile(list);
+        AudioFilePlayer a = new AudioFilePlayer(null);
+        List<URL> list = new ArrayList<>();
+        try {
+            list.add(URI.create("http://ia902508.us.archive.org/5/items/testmp3testfile/mpthreetest.mp3").toURL());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        a.playURL(list);
 //
 //        a.previousSound();
 //        try {

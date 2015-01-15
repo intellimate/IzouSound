@@ -41,7 +41,6 @@ public class AudioFilePlayer {
      */
     public void playFile(List<String> filePath) {
         soundEngine.addSoundFiles(filePath);
-        soundEngine.run();
     }
 
     /**
@@ -57,11 +56,11 @@ public class AudioFilePlayer {
      */
     public void playFile(List<String> filePath, int startTime, int endTime) {
         soundEngine.addSoundFiles(filePath, startTime, endTime);
-        soundEngine.run();
     }
 
     /**
      * Starts a new playback session with the URLs passed to it as an array
+     * Only HTTP is supported (No HTTPS)
      *
      * @param url {@code filePath} a valid URL to a sound file
      *                            Ex: http://www.example.com/test.mp3
@@ -72,6 +71,7 @@ public class AudioFilePlayer {
 
     /**
      * Starts a new playback session with the URLs passed to it as an array
+     * Only HTTP is supported (No HTTPS)
      *
      * This should probably only be used when 1 sound file is added, otherwise all sound files will play from
      * {@code startTime} to {@code endTime}
@@ -83,7 +83,6 @@ public class AudioFilePlayer {
      */
     public void playURL(List<URL> url, int startTime, int endTime) {
         soundEngine.addSoundURL(url, startTime, endTime);
-        soundEngine.run();
     }
 
     /**
