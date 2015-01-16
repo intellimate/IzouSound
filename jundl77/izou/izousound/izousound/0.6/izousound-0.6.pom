@@ -13,9 +13,10 @@
     <properties>
         <plugin.id>jundl77.izou.izousound</plugin.id>
         <plugin.class>jundl77.izou.izousound.ZipFileManager</plugin.class>
-        <plugin.version>0.5</plugin.version>
+        <plugin.version>0.9</plugin.version>
         <plugin.provider>Julian Brendl</plugin.provider>
         <plugin.dependencies/>
+
         <repo.name>IzouSound</repo.name>
         <repo.owner>jundl77</repo.owner>
         <!-- github server corresponds to entry in ~/.m2/settings.xml -->
@@ -26,27 +27,7 @@
         <dependency>
             <groupId>intellimate.izou</groupId>
             <artifactId>Izou</artifactId>
-            <version>0.9.9.9-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.googlecode.soundlibs</groupId>
-            <artifactId>tritonus-share</artifactId>
-            <version>0.3.7-2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.googlecode.soundlibs</groupId>
-            <artifactId>mp3spi</artifactId>
-            <version>1.9.5-1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.googlecode.soundlibs</groupId>
-            <artifactId>vorbisspi</artifactId>
-            <version>1.0.3-1</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>2.6</version>
+            <version>0.9.9.9.6-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
@@ -90,7 +71,15 @@
                     </execution>
                 </executions>
             </plugin>
-
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <forkMode>once</forkMode>
+                    <workingDirectory>target</workingDirectory>
+                    <argLine>-Djava.library.path=${basedir}/lib</argLine>
+                </configuration>
+            </plugin>
             <plugin>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <executions>
@@ -166,6 +155,7 @@
                         <manifest>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                             <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                            <addClasspath>true</addClasspath>
                         </manifest>
                     </archive>
                 </configuration>
