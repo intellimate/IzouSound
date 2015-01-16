@@ -3,10 +3,11 @@
   <groupId>jundl77.izou.izousound</groupId>
   <artifactId>izousound</artifactId>
   <versioning>
-    <release>0.6</release>
+    <release>0.7</release>
     <versions>
       <version>0.6</version>
+      <version>0.7</version>
     </versions>
-    <lastUpdated>20150116143622</lastUpdated>
+    <lastUpdated>20150116143704</lastUpdated>
   </versioning>
 </metadata>
