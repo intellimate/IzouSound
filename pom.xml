@@ -7,13 +7,13 @@
     <groupId>jundl77.izou.izousound</groupId>
     <artifactId>izousound</artifactId>
     <packaging>jar</packaging>
-    <version>0.6</version>
+    <version>0.7</version>
     <name>Izou Sound</name>
 
     <properties>
         <plugin.id>jundl77.izou.izousound</plugin.id>
         <plugin.class>jundl77.izou.izousound.ZipFileManager</plugin.class>
-        <plugin.version>0.5</plugin.version>
+        <plugin.version>0.9</plugin.version>
         <plugin.provider>Julian Brendl</plugin.provider>
         <plugin.dependencies/>
 
@@ -27,7 +27,7 @@
         <dependency>
             <groupId>intellimate.izou</groupId>
             <artifactId>Izou</artifactId>
-            <version>0.9.9.9-SNAPSHOT</version>
+            <version>0.9.9.9.6-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
