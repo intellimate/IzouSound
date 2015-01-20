@@ -27,8 +27,8 @@ class SoundEngine {
     private Media media;
     private SoundIdentityFactory soundIdentityFactory;
     private HashMap<Integer, SoundIdentity> soundFileMap;
-    private SoundIdentity currentSound;
     private AtomicInteger playIndex;
+    private AudioFilePlayer audioFilePlayer;
     private Context context;
 
     /**
@@ -36,14 +36,15 @@ class SoundEngine {
      *
      * @param context the Context of the output-plugin
      */
-    public SoundEngine(Context context) {
+    public SoundEngine(Context context, AudioFilePlayer audioFilePlayer) {
         playIndex = new AtomicInteger();
         JFXPanel panel = new JFXPanel();
         this.context = context;
         soundFileMap = new HashMap<>();
         soundIdentityFactory = new SoundIdentityFactory();
-        currentSound = null;
+        this.audioFilePlayer = audioFilePlayer;
         playIndex.set(-1);
+        audioFilePlayer.setCurrentSound(null);
     }
 
     /**
@@ -216,7 +217,8 @@ class SoundEngine {
      * @throws java.lang.IndexOutOfBoundsException thrown if start or end time are out of bounds (-1 not included)
      */
     private void playSoundFile(SoundIdentity soundId) throws IndexOutOfBoundsException {
-        currentSound = soundId;
+        audioFilePlayer.setCurrentSound(soundId);
+
         if (soundId.getSoundInfo().getPath() != null) {
             String path = soundId.getSoundInfo().getPath();
 
@@ -228,25 +230,31 @@ class SoundEngine {
             }
         } else if (soundId.getSoundInfo().getURL() != null) {
             media = new Media(soundId.getSoundInfo().getURL().toExternalForm());
+        } else {
+            audioFilePlayer.setCurrentSound(null);
+            return;
         }
 
         prepareMediaPlayer();
 
         setPlayDuration(soundId);
 
-        currentSound = soundId;
         mediaPlayer.play();
         //context.logger.getLogger().debug("Started sound playback of: " + soundId.getSoundInfo().getName());
 
         mediaPlayer.setOnEndOfMedia(() -> {
             //context.logger.getLogger().debug("Finished sound playback of: " + soundId.getSoundInfo().getName());
             if (playIndex.get() > soundFileMap.size()) {
+                audioFilePlayer.setCurrentSound(null);
                 return;
             }
             playIndex.incrementAndGet();
             SoundIdentity id = soundFileMap.get(playIndex.intValue());
             mediaPlayer.dispose();
-            playSoundFile(id);
+
+            if (id != null) {
+                playSoundFile(id);
+            }
         });
     }
 
@@ -273,13 +281,13 @@ class SoundEngine {
         mediaPlayer.setOnReady(null);
     }
 
-    private void setPlayDuration(SoundIdentity soundId) {
+    private void setPlayDuration(SoundIdentity soundId) throws IndexOutOfBoundsException {
         double duration = media.getDuration().toMillis();
 
         if (soundId.getSoundInfo().getStartTime() == -1) {
             mediaPlayer.setStartTime(Duration.millis(0));
-        } else if (soundId.getSoundInfo().getStartTime() > 0
-                && soundId.getSoundInfo().getStartTime() < duration) {
+        } else if (soundId.getSoundInfo().getStartTime() >= 0
+                && soundId.getSoundInfo().getStartTime() <= duration) {
             mediaPlayer.setStartTime(Duration.millis(soundId.getSoundInfo().getStartTime()));
         } else {
             throw new IndexOutOfBoundsException("start-time out of bounds");
@@ -287,8 +295,8 @@ class SoundEngine {
 
         if (soundId.getSoundInfo().getStopTime() == -1) {
             mediaPlayer.setStopTime(Duration.millis(duration));
-        } else if (soundId.getSoundInfo().getStopTime() > 0
-                && soundId.getSoundInfo().getStopTime() < duration) {
+        } else if (soundId.getSoundInfo().getStopTime() >= 0
+                && soundId.getSoundInfo().getStopTime() <= duration) {
             mediaPlayer.setStopTime(Duration.millis(soundId.getSoundInfo().getStopTime()));
         } else {
             throw new IndexOutOfBoundsException("end-time out of bounds");
@@ -362,6 +370,11 @@ class SoundEngine {
         playIndex.set(0);
         fillQueuedSoundFiles(soundInfos);
         SoundIdentity id = soundFileMap.get(playIndex.intValue());
-        playSoundFile(id);
+
+        try {
+            playSoundFile(id);
+        } catch (IndexOutOfBoundsException e) {
+            context.logger.getLogger().warn("Start or end times were probably out of bounds", e);
+        }
     }
 }

@@ -100,10 +100,19 @@ public class SoundOutputPlugin extends OutputPlugin<SoundOutputData> implements 
         for (SoundOutputData outputData : pollTDoneList()) {
             if (outputData.getPaths() != null) {
                 audioFilePlayer.playFile(outputData.getPaths(), outputData.getStartTime(), outputData.getStopTime());
+            } else if (outputData.getURLs() != null) {
+                audioFilePlayer.playURL(outputData.getURLs(), outputData.getStartTime(), outputData.getStopTime());
             }
 
-            if (outputData.getURLs() != null) {
-                audioFilePlayer.playURL(outputData.getURLs(), outputData.getStartTime(), outputData.getStopTime());
+            int startTime = audioFilePlayer.getCurrentSound().getSoundInfo().getStartTime();
+            int stopTime = audioFilePlayer.getCurrentSound().getSoundInfo().getStopTime();
+            int duration = stopTime - startTime;
+            if (duration < 30000) {
+                try {
+                    Thread.sleep(duration);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
