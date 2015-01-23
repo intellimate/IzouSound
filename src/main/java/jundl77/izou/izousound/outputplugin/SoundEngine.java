@@ -219,7 +219,10 @@ class SoundEngine {
     private void playSoundFile(SoundIdentity soundId) throws IndexOutOfBoundsException {
         audioFilePlayer.setCurrentSound(soundId);
 
-        if (soundId.getSoundInfo().getPath() != null) {
+        if (soundId == null) {
+            audioFilePlayer.setCurrentSound(null);
+            return;
+        } else if (soundId.getSoundInfo().getPath() != null) {
             String path = soundId.getSoundInfo().getPath();
 
             File file = new File(path);
@@ -230,9 +233,6 @@ class SoundEngine {
             }
         } else if (soundId.getSoundInfo().getURL() != null) {
             media = new Media(soundId.getSoundInfo().getURL().toExternalForm());
-        } else {
-            audioFilePlayer.setCurrentSound(null);
-            return;
         }
 
         prepareMediaPlayer();
@@ -342,10 +342,10 @@ class SoundEngine {
             for (SoundInfo soundInfo : fileInfos) {
                 String filePath = soundInfo.getPath();
                 if (!new File(filePath).exists()) {
-                    context.logger.getLogger().error(filePath + "does not exists - Unable to play sound");
-                    continue;
+                    context.logger.getLogger().error(filePath + " does not exists - Unable to play sound");
+                } else {
+                    recursiveSoundFileSearch(soundInfo);
                 }
-                recursiveSoundFileSearch(soundInfo);
             }
         } else if (fileInfos.get(0).getURL() != null) {
             for (SoundInfo soundInfo : fileInfos) {

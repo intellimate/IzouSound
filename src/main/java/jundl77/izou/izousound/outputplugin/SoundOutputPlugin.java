@@ -12,6 +12,12 @@ import java.util.List;
 /**
  * The SoundOutputPlugin is capable of playing MP3 and various other sound formats. It can take file paths,
  * or HTTP URLs. Various events can be fired to control the various aspects of the sound playback.
+ * <p>
+ *     You can also send events to the SoundOutputPlugin while it is playing in order to change its state (pause,
+ *     next song, etc.). In order to do so, you need to add the event IDs of the corresponding action as a resource
+ *     to an event. If you would like to change the volume, the resource has to be in the form of:
+ *     VOLUME_EVENT_ID=volumeLevel, where volumeLevel is the percent of volume there should be.
+ * </p>
  */
 public class SoundOutputPlugin extends OutputPlugin<SoundOutputData> implements EventListener {
     public static final String ID = SoundOutputPlugin.class.getCanonicalName();
@@ -102,6 +108,8 @@ public class SoundOutputPlugin extends OutputPlugin<SoundOutputData> implements 
                 audioFilePlayer.playFile(outputData.getPaths(), outputData.getStartTime(), outputData.getStopTime());
             } else if (outputData.getURLs() != null) {
                 audioFilePlayer.playURL(outputData.getURLs(), outputData.getStartTime(), outputData.getStopTime());
+            } else {
+                return;
             }
 
             int startTime = audioFilePlayer.getCurrentSound().getSoundInfo().getStartTime();

@@ -4,7 +4,6 @@ import intellimate.izou.system.Context;
 
 import java.net.URL;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 
 /**
  * The {@code AudioFilePlayer} is a wrapper for the {@code SoundEngine}, which allows the AudioFilePlayer to put the
@@ -20,7 +19,6 @@ import java.util.concurrent.ExecutorService;
  * </p>
  */
 public class AudioFilePlayer {
-    private ExecutorService executorService;
     private SoundEngine soundEngine;
     private SoundIdentity currentSound;
     private Context context;
