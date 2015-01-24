@@ -56,11 +56,11 @@ class SoundEngine {
      */
     public void addSoundFiles(List<String> soundFilePaths, int startTime, int stopTime) {
         List<SoundInfo> soundInfos = new ArrayList<>();
-
         for (String path : soundFilePaths) {
             SoundInfo soundInfo = new SoundInfo(path, startTime, stopTime);
             soundInfos.add(soundInfo);
         }
+        context.logger.getLogger().debug("Added sound files to queue");
 
         run(soundInfos);
     }
@@ -79,6 +79,7 @@ class SoundEngine {
             SoundInfo soundInfo = new SoundInfo(url, startTime, stopTime);
             soundInfos.add(soundInfo);
         }
+        context.logger.getLogger().debug("Adding sound URLs to queue");
 
         run(soundInfos);
     }
@@ -111,6 +112,7 @@ class SoundEngine {
     public void resumeSound() throws IllegalStateException {
         if (getState().equals("PAUSED")) {
             mediaPlayer.play();
+            context.logger.getLogger().debug("Resumed sound");
         } else {
             throw new IllegalStateException("sound is not paused, so it cannot be resumed");
         }
@@ -132,6 +134,7 @@ class SoundEngine {
         if (getState() != null) {
             mediaPlayer.dispose();
             resetSession();
+            context.logger.getLogger().debug("Stopped sound");
         }
     }
 
@@ -141,6 +144,7 @@ class SoundEngine {
     public void pauseSound() {
         if (getState() != null) {
             mediaPlayer.pause();
+            context.logger.getLogger().debug("Paused sound");
         }
     }
 
@@ -152,6 +156,7 @@ class SoundEngine {
             return;
         }
 
+        context.logger.getLogger().debug("Started playing next sound");
         if (playIndex.get() < soundFileMap.size() - 1) {
             //no need to increment index because loop does it on its own
             stopSound();
@@ -173,7 +178,7 @@ class SoundEngine {
         //index is decremented by one, yet the loop will bring it back up to the same number, causing the sound to
         //start over
         playIndex.decrementAndGet();
-
+        context.logger.getLogger().debug("Restarted current sound playback");
         stopSound();
     }
 
@@ -184,6 +189,7 @@ class SoundEngine {
         if (getState() == null) {
             return;
         }
+        context.logger.getLogger().debug("Started playing previous sound");
 
         if (playIndex.get() > 0) {
             //the index is decreased by 2 and not 0 because the loop will increment the index to 0 on its own
@@ -208,6 +214,7 @@ class SoundEngine {
         }
 
         mediaPlayer.setVolume(volume / 100);
+        context.logger.getLogger().debug("Set volume to " + volume + "%");
     }
 
     /**
@@ -221,6 +228,7 @@ class SoundEngine {
 
         if (soundId == null) {
             audioFilePlayer.setCurrentSound(null);
+            context.logger.getLogger().debug("Stopped playback");
             return;
         } else if (soundId.getSoundInfo().getPath() != null) {
             String path = soundId.getSoundInfo().getPath();
@@ -235,10 +243,13 @@ class SoundEngine {
             media = new Media(soundId.getSoundInfo().getURL().toExternalForm());
         }
 
+        context.logger.getLogger().debug("Preparing media for playback");
         prepareMediaPlayer();
 
+        context.logger.getLogger().debug("Setting play duration");
         setPlayDuration(soundId);
 
+        context.logger.getLogger().debug("Started playback of " + soundId.getSoundInfo().getName());
         mediaPlayer.play();
         //context.logger.getLogger().debug("Started sound playback of: " + soundId.getSoundInfo().getName());
 
@@ -246,6 +257,7 @@ class SoundEngine {
             //context.logger.getLogger().debug("Finished sound playback of: " + soundId.getSoundInfo().getName());
             if (playIndex.get() > soundFileMap.size()) {
                 audioFilePlayer.setCurrentSound(null);
+                context.logger.getLogger().debug("Stopped playback");
                 return;
             }
             playIndex.incrementAndGet();
@@ -338,6 +350,7 @@ class SoundEngine {
     }
 
     private void fillQueuedSoundFiles(List<SoundInfo> fileInfos) {
+        context.logger.getLogger().debug("Doing recursive search for more sound files");
         if (fileInfos.get(0).getPath() != null) {
             for (SoundInfo soundInfo : fileInfos) {
                 String filePath = soundInfo.getPath();
@@ -352,6 +365,7 @@ class SoundEngine {
                 addToQueuedSongs(soundInfo);
             }
         }
+        context.logger.getLogger().debug("Found " + soundFileMap.size() + " files");
     }
 
     private void resetSession() {
@@ -359,6 +373,7 @@ class SoundEngine {
         soundFileMap.clear();
         mediaPlayer = null;
         media = null;
+        context.logger.getLogger().debug("Resetting playback session");
     }
 
     /**
