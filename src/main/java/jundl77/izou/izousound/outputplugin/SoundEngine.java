@@ -391,5 +391,7 @@ class SoundEngine {
         } catch (IndexOutOfBoundsException e) {
             context.logger.getLogger().warn("Start or end times were probably out of bounds", e);
         }
+
+        context.logger.getLogger().debug("Finished playback session");
     }
 }
