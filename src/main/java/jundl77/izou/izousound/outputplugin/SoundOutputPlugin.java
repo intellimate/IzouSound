@@ -112,14 +112,16 @@ public class SoundOutputPlugin extends OutputPlugin<SoundOutputData> implements 
                 return;
             }
 
-            int startTime = audioFilePlayer.getCurrentSound().getSoundInfo().getStartTime();
-            int stopTime = audioFilePlayer.getCurrentSound().getSoundInfo().getStopTime();
-            int duration = stopTime - startTime;
-            if (duration < 30000) {
-                try {
-                    Thread.sleep(duration);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+            if (audioFilePlayer.getCurrentSound() != null) {
+                int startTime = audioFilePlayer.getCurrentSound().getSoundInfo().getStartTime();
+                int stopTime = audioFilePlayer.getCurrentSound().getSoundInfo().getStopTime();
+                int duration = stopTime - startTime;
+                if (duration < 30000) {
+                    try {
+                        Thread.sleep(duration);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
