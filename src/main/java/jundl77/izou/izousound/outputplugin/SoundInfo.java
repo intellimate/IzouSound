@@ -111,4 +111,22 @@ class SoundInfo {
     public int getStopTime() {
         return stopTime;
     }
+
+    /**
+     * Sets the start time of the sound (in milliseconds)
+     *
+     * @param startTime the start time of the sound
+     */
+    public void setStartTime(int startTime) {
+        this.startTime = startTime;
+    }
+
+    /**
+     * Sets the stop time of the sound (in milliseconds), if the stop time is -1 the sound is played until the end
+     *
+     * @param stopTime the stop time of the sound
+     */
+    public void setStopTime(int stopTime) {
+        this.stopTime = stopTime;
+    }
 }

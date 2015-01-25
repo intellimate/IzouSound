@@ -55,14 +55,21 @@ class SoundEngine {
      * @param stopTime the stop time of the sound file  (in milliseconds)
      */
     public void addSoundFiles(List<String> soundFilePaths, int startTime, int stopTime) {
+        boolean shouldPlay = false;
         List<SoundInfo> soundInfos = new ArrayList<>();
         for (String path : soundFilePaths) {
-            SoundInfo soundInfo = new SoundInfo(path, startTime, stopTime);
-            soundInfos.add(soundInfo);
+            if (new File(path).exists()) {
+                SoundInfo soundInfo = new SoundInfo(path, startTime, stopTime);
+                soundInfos.add(soundInfo);
+                shouldPlay = true;
+            }
         }
-        context.logger.getLogger().debug("Added sound files to queue");
-
-        run(soundInfos);
+        if (shouldPlay) {
+            context.logger.getLogger().debug("Added sound files to queue");
+            run(soundInfos);
+        } else {
+            context.logger.getLogger().debug("No valid sound files found, quitting");
+        }
     }
 
     /**
@@ -298,6 +305,7 @@ class SoundEngine {
 
         if (soundId.getSoundInfo().getStartTime() == -1) {
             mediaPlayer.setStartTime(Duration.millis(0));
+            soundId.getSoundInfo().setStartTime(0);
         } else if (soundId.getSoundInfo().getStartTime() >= 0
                 && soundId.getSoundInfo().getStartTime() <= duration) {
             mediaPlayer.setStartTime(Duration.millis(soundId.getSoundInfo().getStartTime()));
@@ -307,6 +315,7 @@ class SoundEngine {
 
         if (soundId.getSoundInfo().getStopTime() == -1) {
             mediaPlayer.setStopTime(Duration.millis(duration));
+            soundId.getSoundInfo().setStopTime((int)duration);
         } else if (soundId.getSoundInfo().getStopTime() >= 0
                 && soundId.getSoundInfo().getStopTime() <= duration) {
             mediaPlayer.setStopTime(Duration.millis(soundId.getSoundInfo().getStopTime()));
