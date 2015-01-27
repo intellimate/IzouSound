@@ -1,10 +1,12 @@
 package jundl77.izou.izousound.outputplugin;
 
 import intellimate.izou.system.Context;
-import javafx.embed.swing.JFXPanel;
+import javafx.application.Application;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+import javafx.stage.Stage;
 import javafx.util.Duration;
+import jundl77.izou.izousound.SoundAddOn;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -12,6 +14,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -19,10 +22,10 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * This class runs as a task in a thread pool and plays songs, it is controlled by the AudioFilePlayer.There should be
- * no reason for using this class, as it is the engine that is running behind the AudioFilePlayer and should therefore
+ * no reason for using this class, as it is the "engine" that is running behind the AudioFilePlayer and should therefore
  * not be touched.
  */
-class SoundEngine {
+public class SoundEngine extends Application {
     private MediaPlayer mediaPlayer;
     private Media media;
     private SoundIdentityFactory soundIdentityFactory;
@@ -30,15 +33,39 @@ class SoundEngine {
     private AtomicInteger playIndex;
     private AudioFilePlayer audioFilePlayer;
     private Context context;
+    private static final long INIT_TIME_LIMIT = 5000;
+
+    /**
+     * Empty constructor with sole purpose for Application.launch, which needs an empty constructor to start JavaFX
+     * toolkit
+     */
+    public SoundEngine() {
+    }
 
     /**
      * Creates a new sound-object in order to play sound files
      *
      * @param context the Context of the output-plugin
      */
-    public SoundEngine(Context context, AudioFilePlayer audioFilePlayer) {
+    public SoundEngine(Context context, AudioFilePlayer audioFilePlayer) throws TimeoutException {
+        long startTime = System.currentTimeMillis();
+        long duration = 0;
+        context.logger.getLogger().debug("Initializing JavaFX ToolKit");
+        while (!SoundAddOn.toolKitInit.get() && duration < INIT_TIME_LIMIT) {
+            duration = System.currentTimeMillis() - startTime;
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        context.logger.getLogger().debug("Finished initializing JavaFX ToolKit");
+
+        if (duration > INIT_TIME_LIMIT) {
+            throw new TimeoutException("Toolkit has not been initialized in over 5 sec, stopping");
+        }
+
         playIndex = new AtomicInteger();
-        JFXPanel panel = new JFXPanel();
         this.context = context;
         soundFileMap = new HashMap<>();
         soundIdentityFactory = new SoundIdentityFactory();
@@ -119,7 +146,7 @@ class SoundEngine {
     public void resumeSound() throws IllegalStateException {
         if (getState().equals("PAUSED")) {
             mediaPlayer.play();
-            context.logger.getLogger().debug("Resumed sound");
+            //context.logger.getLogger().debug("Resumed sound");
         } else {
             throw new IllegalStateException("sound is not paused, so it cannot be resumed");
         }
@@ -258,10 +285,10 @@ class SoundEngine {
 
         context.logger.getLogger().debug("Started playback of " + soundId.getSoundInfo().getName());
         mediaPlayer.play();
-        //context.logger.getLogger().debug("Started sound playback of: " + soundId.getSoundInfo().getName());
+        context.logger.getLogger().debug("Started sound playback of: " + soundId.getSoundInfo().getName());
 
         mediaPlayer.setOnEndOfMedia(() -> {
-            //context.logger.getLogger().debug("Finished sound playback of: " + soundId.getSoundInfo().getName());
+            context.logger.getLogger().debug("Finished sound playback of: " + soundId.getSoundInfo().getName());
             if (playIndex.get() > soundFileMap.size()) {
                 audioFilePlayer.setCurrentSound(null);
                 context.logger.getLogger().debug("Stopped playback");
@@ -382,7 +409,7 @@ class SoundEngine {
         soundFileMap.clear();
         mediaPlayer = null;
         media = null;
-        context.logger.getLogger().debug("Resetting playback session");
+        //context.logger.getLogger().debug("Resetting playback session");
     }
 
     /**
@@ -400,5 +427,18 @@ class SoundEngine {
         } catch (IndexOutOfBoundsException e) {
             context.logger.getLogger().warn("Start or end times were probably out of bounds", e);
         }
+    }
+
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+        SoundAddOn.toolKitInit.set(true);
+    }
+
+    /**
+     * Initializes the sound engine by starting the JavaFX ToolKit
+     */
+    public static void initSoundEngine() {
+        Thread t = new Thread(Application::launch);
+        t.start();
     }
 }

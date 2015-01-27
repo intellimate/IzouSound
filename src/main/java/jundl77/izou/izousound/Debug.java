@@ -1,10 +1,8 @@
 package jundl77.izou.izousound;
 
+import intellimate.izou.addon.AddOn;
 import jundl77.izou.izousound.outputplugin.AudioFilePlayer;
 
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,14 +19,14 @@ public class Debug {
 //        List<String> list = new ArrayList<>();
 //        list.add("/Users/julianbrendl/music");
 //        a.playFile(list);
+        AddOn addOn = new SoundAddOn();
         AudioFilePlayer a = new AudioFilePlayer(null);
-        List<URL> list = new ArrayList<>();
-        try {
-            list.add(URI.create("http://ia902508.us.archive.org/5/items/testmp3testfile/mpthreetest.mp3").toURL());
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-        a.playURL(list);
+        //List<URL> list = new ArrayList<>();
+        List<String> list = new ArrayList<>();
+
+        //list.add(URI.create("http://ia902508.us.archive.org/5/items/testmp3testfile/mpthreetest.mp3").toURL());
+        list.add("/Users/julianbrendl/music");
+        a.playFile(list);
 //
 //        a.previousSound();
 //        try {

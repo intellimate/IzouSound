@@ -6,22 +6,27 @@ import intellimate.izou.contentgenerator.ContentGenerator;
 import intellimate.izou.events.EventsController;
 import intellimate.izou.output.OutputExtension;
 import intellimate.izou.output.OutputPlugin;
+import jundl77.izou.izousound.outputplugin.SoundEngine;
 import jundl77.izou.izousound.outputplugin.SoundOutputPlugin;
 import ro.fortsoft.pf4j.Extension;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 @Extension
 public class SoundAddOn extends AddOn {
+    public static AtomicBoolean toolKitInit;
 
     @SuppressWarnings("WeakerAccess")
     public static final String ID = SoundAddOn.class.getCanonicalName();
 
     public SoundAddOn() {
         super(ID);
+        toolKitInit = new AtomicBoolean(false);
     }
 
     @Override
     public void prepare() {
-
+        SoundEngine.initSoundEngine();
     }
 
     @Override
