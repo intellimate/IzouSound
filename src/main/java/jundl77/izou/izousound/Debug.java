@@ -28,6 +28,7 @@ public class Debug {
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
+        a.playURL(list);
 //
 //        a.previousSound();
 //        try {
