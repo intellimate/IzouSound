@@ -56,7 +56,7 @@ public class SoundEngine extends Application {
             try {
                 Thread.sleep(5000);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                context.logger.getLogger().error("Error happened while thread was sleeping", e);
             }
         }
         context.logger.getLogger().debug("Finished initializing JavaFX ToolKit");

@@ -38,7 +38,7 @@ public class AudioFilePlayer {
         try {
             this.soundEngine = new SoundEngine(context, this);
         } catch (TimeoutException e) {
-            e.printStackTrace();
+            context.logger.getLogger().error("Error instantiating SoundEngine", e);
         }
     }
 
