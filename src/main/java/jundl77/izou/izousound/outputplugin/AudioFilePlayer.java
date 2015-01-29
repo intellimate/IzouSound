@@ -173,13 +173,4 @@ public class AudioFilePlayer {
     public boolean isOutOfBoundsError() {
         return soundEngine.isOutOfBoundsError();
     }
-
-    /**
-     * Sets the out of bounds error state, can be used to reset the error variable from outside this class
-     *
-     * @param outOfBoundsError the value to set to outOfBoundsError
-     */
-    public void setOutOfBoundsError(boolean outOfBoundsError) {
-        soundEngine.setOutOfBoundsError(outOfBoundsError);
-    }
 }

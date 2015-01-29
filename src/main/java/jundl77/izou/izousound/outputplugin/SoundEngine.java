@@ -306,6 +306,7 @@ public class SoundEngine {
     }
 
     private void setPlayDuration(SoundIdentity soundId) throws IndexOutOfBoundsException {
+        outOfBoundsError = false;
         double duration = media.getDuration().toMillis();
 
         if (soundId.getSoundInfo().getStartTime() == -1) {
@@ -419,14 +420,5 @@ public class SoundEngine {
      */
     public boolean isOutOfBoundsError() {
         return outOfBoundsError;
-    }
-
-    /**
-     * Sets the out of bounds error state, can be used to reset the error variable from outside this class
-     *
-     * @param outOfBoundsError the value to set to outOfBoundsError
-     */
-    public void setOutOfBoundsError(boolean outOfBoundsError) {
-        this.outOfBoundsError = outOfBoundsError;
     }
 }
