@@ -220,6 +220,7 @@
                     <releaseName>${plugin.version}</releaseName>
                     <tag>${plugin.version}</tag>
                     <artifact>${project.build.directory}/${artifactId}-${version}.zip</artifact>
+                    <overwriteArtifact>true</overwriteArtifact>
                 </configuration>
                 <executions>
                     <execution>
