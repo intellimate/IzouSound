@@ -4,7 +4,6 @@ import intellimate.izou.system.Context;
 
 import java.net.URL;
 import java.util.List;
-import java.util.concurrent.TimeoutException;
 
 /**
  * The {@code AudioFilePlayer} is a wrapper for the {@code SoundEngine}, which allows the AudioFilePlayer to put the
@@ -35,11 +34,7 @@ public class AudioFilePlayer {
      */
     public AudioFilePlayer(Context context) {
         this.context = context;
-        try {
-            this.soundEngine = new SoundEngine(context, this);
-        } catch (TimeoutException e) {
-            context.logger.getLogger().error("Error instantiating SoundEngine", e);
-        }
+        this.soundEngine = new SoundEngine(context, this);
     }
 
     /**

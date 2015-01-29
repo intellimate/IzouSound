@@ -1,12 +1,9 @@
 package jundl77.izou.izousound.outputplugin;
 
 import intellimate.izou.system.Context;
-import javafx.application.Application;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
-import javafx.stage.Stage;
 import javafx.util.Duration;
-import jundl77.izou.izousound.SoundAddOn;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -14,7 +11,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -25,7 +21,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * no reason for using this class, as it is the "engine" that is running behind the AudioFilePlayer and should therefore
  * not be touched.
  */
-public class SoundEngine extends Application {
+public class SoundEngine {
     private MediaPlayer mediaPlayer;
     private Media media;
     private SoundIdentityFactory soundIdentityFactory;
@@ -33,38 +29,13 @@ public class SoundEngine extends Application {
     private AtomicInteger playIndex;
     private AudioFilePlayer audioFilePlayer;
     private Context context;
-    private static final long INIT_TIME_LIMIT = 5000;
-
-    /**
-     * Empty constructor with sole purpose for Application.launch, which needs an empty constructor to start JavaFX
-     * toolkit
-     */
-    public SoundEngine() {
-    }
 
     /**
      * Creates a new sound-object in order to play sound files
      *
      * @param context the Context of the output-plugin
      */
-    public SoundEngine(Context context, AudioFilePlayer audioFilePlayer) throws TimeoutException {
-        long startTime = System.currentTimeMillis();
-        long duration = 0;
-        context.logger.getLogger().debug("Initializing JavaFX ToolKit");
-        while (!SoundAddOn.toolKitInit.get() && duration < INIT_TIME_LIMIT) {
-            duration = System.currentTimeMillis() - startTime;
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                context.logger.getLogger().error("Error happened while thread was sleeping", e);
-            }
-        }
-        context.logger.getLogger().debug("Finished initializing JavaFX ToolKit");
-
-        if (duration > INIT_TIME_LIMIT) {
-            throw new TimeoutException("Toolkit has not been initialized in over 5 sec, stopping");
-        }
-
+    public SoundEngine(Context context, AudioFilePlayer audioFilePlayer) {
         playIndex = new AtomicInteger();
         this.context = context;
         soundFileMap = new HashMap<>();
@@ -146,7 +117,7 @@ public class SoundEngine extends Application {
     public void resumeSound() throws IllegalStateException {
         if (getState().equals("PAUSED")) {
             mediaPlayer.play();
-            //context.logger.getLogger().debug("Resumed sound");
+            context.logger.getLogger().debug("Resumed sound");
         } else {
             throw new IllegalStateException("sound is not paused, so it cannot be resumed");
         }
@@ -278,7 +249,13 @@ public class SoundEngine extends Application {
         }
 
         context.logger.getLogger().debug("Preparing media for playback");
-        prepareMediaPlayer();
+
+        try {
+            prepareMediaPlayer();
+        } catch (IndexOutOfBoundsException e) {
+            resetSession();
+            throw new IndexOutOfBoundsException(e.getMessage());
+        }
 
         context.logger.getLogger().debug("Setting play duration");
         setPlayDuration(soundId);
@@ -407,9 +384,12 @@ public class SoundEngine extends Application {
     private void resetSession() {
         soundIdentityFactory.startNewSession();
         soundFileMap.clear();
+        if (mediaPlayer != null) {
+            mediaPlayer.dispose();
+        }
         mediaPlayer = null;
         media = null;
-        //context.logger.getLogger().debug("Resetting playback session");
+        context.logger.getLogger().debug("Resetting playback session");
     }
 
     /**
@@ -427,18 +407,5 @@ public class SoundEngine extends Application {
         } catch (IndexOutOfBoundsException e) {
             context.logger.getLogger().warn("Start or end times were probably out of bounds", e);
         }
-    }
-
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-        SoundAddOn.toolKitInit.set(true);
-    }
-
-    /**
-     * Initializes the sound engine by starting the JavaFX ToolKit
-     */
-    public static void initSoundEngine() {
-        Thread t = new Thread(Application::launch);
-        t.start();
     }
 }
