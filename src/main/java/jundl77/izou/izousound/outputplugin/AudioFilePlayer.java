@@ -164,4 +164,22 @@ public class AudioFilePlayer {
     public void setCurrentSound(SoundIdentity currentSound) {
         this.currentSound = currentSound;
     }
+
+    /**
+     * Returns true if an out of bounds error occurred with play indices, else false
+     *
+     * @return true if an out of bounds error occurred with play indices, else false
+     */
+    public boolean isOutOfBoundsError() {
+        return soundEngine.isOutOfBoundsError();
+    }
+
+    /**
+     * Sets the out of bounds error state, can be used to reset the error variable from outside this class
+     *
+     * @param outOfBoundsError the value to set to outOfBoundsError
+     */
+    public void setOutOfBoundsError(boolean outOfBoundsError) {
+        soundEngine.setOutOfBoundsError(outOfBoundsError);
+    }
 }

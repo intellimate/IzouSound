@@ -29,6 +29,7 @@ public class SoundEngine {
     private AtomicInteger playIndex;
     private AudioFilePlayer audioFilePlayer;
     private Context context;
+    private boolean outOfBoundsError;
 
     /**
      * Creates a new sound-object in order to play sound files
@@ -314,6 +315,7 @@ public class SoundEngine {
                 && soundId.getSoundInfo().getStartTime() <= duration) {
             mediaPlayer.setStartTime(Duration.millis(soundId.getSoundInfo().getStartTime()));
         } else {
+            outOfBoundsError = true;
             throw new IndexOutOfBoundsException("start-time out of bounds");
         }
 
@@ -324,6 +326,7 @@ public class SoundEngine {
                 && soundId.getSoundInfo().getStopTime() <= duration) {
             mediaPlayer.setStopTime(Duration.millis(soundId.getSoundInfo().getStopTime()));
         } else {
+            outOfBoundsError = true;
             throw new IndexOutOfBoundsException("end-time out of bounds");
         }
     }
@@ -407,5 +410,23 @@ public class SoundEngine {
         } catch (IndexOutOfBoundsException e) {
             context.logger.getLogger().warn("Start or end times were probably out of bounds", e);
         }
+    }
+
+    /**
+     * Returns true if an out of bounds error occurred with play indices, else false
+     *
+     * @return true if an out of bounds error occurred with play indices, else false
+     */
+    public boolean isOutOfBoundsError() {
+        return outOfBoundsError;
+    }
+
+    /**
+     * Sets the out of bounds error state, can be used to reset the error variable from outside this class
+     *
+     * @param outOfBoundsError the value to set to outOfBoundsError
+     */
+    public void setOutOfBoundsError(boolean outOfBoundsError) {
+        this.outOfBoundsError = outOfBoundsError;
     }
 }

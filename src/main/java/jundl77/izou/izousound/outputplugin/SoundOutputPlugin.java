@@ -116,7 +116,7 @@ public class SoundOutputPlugin extends OutputPlugin<SoundOutputData> implements 
                 int startTime = audioFilePlayer.getCurrentSound().getSoundInfo().getStartTime();
                 int stopTime = audioFilePlayer.getCurrentSound().getSoundInfo().getStopTime();
                 int duration = stopTime - startTime;
-                if (duration < 30000) {
+                if (duration < 30000 && !audioFilePlayer.isOutOfBoundsError()) {
                     try {
                         Thread.sleep(duration);
                     } catch (InterruptedException e) {
