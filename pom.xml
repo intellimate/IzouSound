@@ -29,6 +29,11 @@
             <artifactId>Izou</artifactId>
             <version>1.0.1-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>javazoom.jl</groupId>
+            <artifactId>jlayer</artifactId>
+            <version>1.0.1</version>
+        </dependency>
     </dependencies>
 
     <repositories>

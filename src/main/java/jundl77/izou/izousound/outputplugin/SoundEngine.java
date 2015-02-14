@@ -6,7 +6,6 @@ import javafx.scene.media.MediaPlayer;
 import javafx.util.Duration;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -230,6 +229,7 @@ public class SoundEngine {
      * @throws java.lang.IndexOutOfBoundsException thrown if start or end time are out of bounds (-1 not included)
      */
     private void playSoundFile(SoundIdentity soundId) throws IndexOutOfBoundsException {
+        context.logger.getLogger().debug("Preparing for immediate playback");
         audioFilePlayer.setCurrentSound(soundId);
 
         if (soundId == null) {
@@ -242,14 +242,14 @@ public class SoundEngine {
             File file = new File(path);
             try {
                 media = new Media(file.toURI().toURL().toExternalForm());
-            } catch (MalformedURLException e) {
-                context.logger.getLogger().error("file to url conversion issue", e);
+                context.logger.getLogger().debug("Created media object for file");
+            } catch (Throwable t) {
+                context.logger.getLogger().error("file to url conversion issue", t);
             }
         } else if (soundId.getSoundInfo().getURL() != null) {
             media = new Media(soundId.getSoundInfo().getURL().toExternalForm());
+            context.logger.getLogger().debug("Created Media object for URL");
         }
-
-        context.logger.getLogger().debug("Preparing media for playback");
 
         try {
             prepareMediaPlayer();
@@ -283,26 +283,41 @@ public class SoundEngine {
     }
 
     private void prepareMediaPlayer() {
-        mediaPlayer = new MediaPlayer(media);
+        context.logger.getLogger().debug("Creating MediaPlayer object");
+        try {
+            mediaPlayer = new MediaPlayer(media);
+        } catch (Throwable t) {
+            context.logger.getLogger().error(t);
+        }
 
+        context.logger.getLogger().debug("MediaPlayer object created");
         final Lock lock = new ReentrantLock();
         final Condition ready = lock.newCondition();
 
-        mediaPlayer.setOnReady(() -> {
-            lock.lock();
-                ready.signal();
-            lock.unlock();
-        });
+        context.logger.getLogger().debug("setting onReady condition");
+        try {
+            mediaPlayer.setOnReady(() -> {
+                lock.lock();
+                    context.logger.getLogger().debug("About to send ready signal");
+                    ready.signal();
+                    context.logger.getLogger().debug("Ready signal sent");
+                lock.unlock();
+            });
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
 
+        context.logger.getLogger().debug("waiting for ready");
         lock.lock();
         try {
             ready.await();
-        } catch (InterruptedException e) {
+        } catch (Throwable e) {
             context.logger.getLogger().warn("thread interrupted", e);
         }
         lock.unlock();
 
         mediaPlayer.setOnReady(null);
+        context.logger.getLogger().debug("MediaPlayer object has been initialized");
     }
 
     private void setPlayDuration(SoundIdentity soundId) throws IndexOutOfBoundsException {
