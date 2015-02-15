@@ -35,6 +35,7 @@ public class AudioFilePlayer {
     public AudioFilePlayer(Context context) {
         this.context = context;
         this.soundEngine = new SoundEngine(context, this);
+        //context.threadPool.getThreadPool().execute(soundEngine);
     }
 
     /**
@@ -44,7 +45,12 @@ public class AudioFilePlayer {
      *                                 for any more found eligible sound files.
      */
     public void playFile(List<String> filePath) {
+        if (soundEngine.getState() != null && soundEngine.getState().equals("PLAYING")) {
+            soundEngine.stopSession();
+        }
+
         soundEngine.addSoundFiles(filePath);
+        waitForReady();
     }
 
     /**
@@ -59,7 +65,12 @@ public class AudioFilePlayer {
      * @param endTime the time all sound files in {@code filePath} should end in milliseconds
      */
     public void playFile(List<String> filePath, int startTime, int endTime) {
+        if (soundEngine.getState() != null && soundEngine.getState().equals("PLAYING")) {
+            soundEngine.stopSession();
+        }
+
         soundEngine.addSoundFiles(filePath, startTime, endTime);
+        waitForReady();
     }
 
     /**
@@ -86,7 +97,22 @@ public class AudioFilePlayer {
      * @param endTime the time all sound files in {@code filePath} should end in milliseconds
      */
     public void playURL(List<URL> url, int startTime, int endTime) {
+        if (soundEngine.getState() != null && soundEngine.getState().equals("PLAYING")) {
+            soundEngine.stopSession();
+        }
+
         soundEngine.addSoundURL(url, startTime, endTime);
+        waitForReady();
+    }
+
+    private void waitForReady() {
+        while (soundEngine.getState() == null || !soundEngine.getState().equals("PLAYING")) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                context.logger.getLogger().error("Error while sleeping", e);
+            }
+        }
     }
 
     /**
