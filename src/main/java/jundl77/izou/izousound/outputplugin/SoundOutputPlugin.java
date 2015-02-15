@@ -113,7 +113,9 @@ public class SoundOutputPlugin extends OutputPlugin<SoundOutputData> implements 
             }
 
             if (audioFilePlayer.getCurrentSound() != null) {
-                long duration = audioFilePlayer.getCurrentSound().getSoundInfo().getDuration();
+                int startTime = audioFilePlayer.getCurrentSound().getSoundInfo().getStartTime();
+                int stopTime = audioFilePlayer.getCurrentSound().getSoundInfo().getStopTime();
+                long duration = stopTime - startTime;
                 if (duration < 30 && !audioFilePlayer.isOutOfBoundsError()) {
                     try {
                         Thread.sleep(duration);
