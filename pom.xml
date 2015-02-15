@@ -28,7 +28,7 @@
             <groupId>intellimate.izou</groupId>
             <artifactId>Izou</artifactId>
             <version>1.0.2-SNAPSHOT</version>
-        </dependency>updated izou maven entry to v1.0.2
+        </dependency>
         <dependency>
             <groupId>javazoom.jl</groupId>
             <artifactId>jlayer</artifactId>
