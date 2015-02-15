@@ -119,7 +119,11 @@ public class AudioFilePlayer {
      * Resumes sound if it has been paused
      */
     public void resume() {
-        soundEngine.resumeSound();
+        try {
+            soundEngine.resumeSound();
+        } catch (IllegalStateException e) {
+            //context.logger.getLogger().error("Unable to resume, because sound is not paused", e);
+        }
     }
 
     /**

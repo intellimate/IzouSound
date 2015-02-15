@@ -29,13 +29,13 @@ public class Debug {
         a.playFile(list);
         a.previousSound();
         try {
-            Thread.sleep(5000);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         a.pause();
         try {
-            Thread.sleep(5000);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -64,5 +64,8 @@ public class Debug {
             e.printStackTrace();
         }
         a.previousSound();
+        a.nextSound();
+        a.pause();
+        a.resume();
     }
 }

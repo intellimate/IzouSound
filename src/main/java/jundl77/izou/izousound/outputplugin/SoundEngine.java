@@ -66,10 +66,10 @@ public class SoundEngine {
             }
         }
         if (shouldPlay) {
-            //context.logger.getLogger().debug("Added sound files to queue");
+            context.logger.getLogger().debug("Added sound files to queue");
             run(soundInfos);
         } else {
-            //context.logger.getLogger().debug("No valid sound files found, quitting");
+            context.logger.getLogger().debug("No valid sound files found, quitting");
         }
     }
 
@@ -87,7 +87,7 @@ public class SoundEngine {
             SoundInfo soundInfo = new SoundInfo(context, url, startTime, stopTime);
             soundInfos.add(soundInfo);
         }
-        //context.logger.getLogger().debug("Adding sound URLs to queue");
+        context.logger.getLogger().debug("Adding sound URLs to queue");
 
         run(soundInfos);
     }
@@ -115,13 +115,18 @@ public class SoundEngine {
      * Resume the sound if there is sound to resume and if it is paused
      */
     public void resumeSound() throws IllegalStateException {
+        if (getState() == null) {
+            context.logger.getLogger().warn("State is null, quitting");
+            return;
+        }
+
         if (state.equals("PAUSED")) {
             if (pausedOnFrame >= 0) {
                 Thread t = new Thread(() ->
                         playSoundFile(audioFilePlayer.getCurrentSound(), pausedOnFrame, Integer.MAX_VALUE));
                 paused = false;
                 t.start();
-                //context.logger.getLogger().debug("Resumed sound");
+                context.logger.getLogger().debug("Resumed sound");
             }
         } else {
             throw new IllegalStateException("sound is not paused, so it cannot be resumed");
@@ -159,8 +164,10 @@ public class SoundEngine {
         if (getState() != null) {
             closeAll();
             resetSession();
-            //context.logger.getLogger().debug("Stopped sound");
+            context.logger.getLogger().debug("Stopped sound");
             state = null;
+        } else {
+            context.logger.getLogger().warn("State is null, quitting");
         }
     }
 
@@ -172,7 +179,7 @@ public class SoundEngine {
             paused = true;
             player.stop();
             state = "PAUSED";
-            //context.logger.getLogger().debug("Paused sound");
+            context.logger.getLogger().debug("Paused sound");
         }
     }
 
@@ -181,15 +188,16 @@ public class SoundEngine {
      */
     public void nextFile() {
         if (getState() == null) {
+            context.logger.getLogger().warn("State is null, quitting");
             return;
         }
 
-        //context.logger.getLogger().debug("Started playing next sound");
+        context.logger.getLogger().debug("Started playing next sound");
         if (playIndex.get() < soundFileMap.size() - 1) {
-            //no need to increment index because loop does it on its own
+            // No need to increment index because loop does it on its own
             stopSound();
         } else {
-            //the index is set to -1 and not 0 because the loop will increment the index to 0 on its own
+            // The index is set to -1 and not 0 because the loop will increment the index to 0 on its own
             playIndex.set(-1);
             stopSound();
         }
@@ -200,13 +208,14 @@ public class SoundEngine {
      */
     public void restartFile() {
         if (getState() == null) {
+            context.logger.getLogger().warn("State is null, quitting");
             return;
         }
 
-        //index is decremented by one, yet the loop will bring it back up to the same number, causing the sound to
-        //start over
+        // Index is decremented by one, yet the loop will bring it back up to the same number, causing the sound to
+        // start over
         playIndex.decrementAndGet();
-        //context.logger.getLogger().debug("Restarted current sound playback");
+        context.logger.getLogger().debug("Restarted current sound playback");
         stopSound();
     }
 
@@ -215,9 +224,10 @@ public class SoundEngine {
      */
     public void previousFile() {
         if (getState() == null) {
+            context.logger.getLogger().warn("State is null, quitting");
             return;
         }
-        //context.logger.getLogger().debug("Started playing previous sound");
+        context.logger.getLogger().debug("Started playing previous sound");
 
         if (playIndex.get() > 0) {
             //the index is decreased by 2 and not 0 because the loop will increment the index to 0 on its own
@@ -238,6 +248,7 @@ public class SoundEngine {
      */
     public void controlVolume(double volume) {
         if (getState() == null) {
+            context.logger.getLogger().warn("State is null, quitting");
             return;
         }
         //TODO: implement volume control
@@ -258,14 +269,14 @@ public class SoundEngine {
         inputStream = null;
         if (soundId == null) {
             audioFilePlayer.setCurrentSound(null);
-            //context.logger.getLogger().debug("Stopped playback");
+            context.logger.getLogger().debug("Stopped playback");
             return;
         } else if (soundId.getSoundInfo().getPath() != null) {
             String path = soundId.getSoundInfo().getPath();
             try {
                 inputStream = new FileInputStream(path);
             } catch (FileNotFoundException e) {
-                //context.logger.getLogger().error("Was not able to find " + path, e);
+                context.logger.getLogger().error("Was not able to find " + path, e);
             }
         } else if (soundId.getSoundInfo().getURL() != null) {
             try {
@@ -276,16 +287,16 @@ public class SoundEngine {
             }
         }
 
-        //context.logger.getLogger().debug("Preparing for playback");
+        context.logger.getLogger().debug("Preparing for playback");
         if (inputStream == null) {
-            //context.logger.getLogger().debug("An input stream was null, quiting");
+            context.logger.getLogger().debug("An input stream was null, quiting");
             return;
         }
 
         try {
             player = new AdvancedPlayer(inputStream);
         } catch (JavaLayerException e) {
-            //context.logger.getLogger().error("Unable to create AdvancedPlayer object", e);
+            context.logger.getLogger().error("Unable to create AdvancedPlayer object", e);
         }
         state = "READY";
 
@@ -295,11 +306,11 @@ public class SoundEngine {
         startSecond = System.currentTimeMillis() / 1000;
         try {
             state = "PLAYING";
-            //context.logger.getLogger().debug("Started playback of " + soundId.getSoundInfo().getName());
+            context.logger.getLogger().debug("Started playback of " + soundId.getSoundInfo().getTitle());
             player.play(startFrame, endFrame);
         } catch (JavaLayerException e) {
             e.printStackTrace();
-            //context.logger.getLogger().error("Error playing sound file", e);
+            context.logger.getLogger().error("Error playing sound file", e);
         }
 
     }
@@ -310,20 +321,23 @@ public class SoundEngine {
             public void playbackFinished(PlaybackEvent event) {
                 Thread t = new Thread(() -> {
                     if (paused) {
+                        pausedOnFrame = event.getFrame();
                         if (id.getSoundInfo().getFramesPerSecond() != -1) {
+                            // Calculating current frame
                             pausedOnFrame = (int)((System.currentTimeMillis() / 1000 - startSecond)
                                     * id.getSoundInfo().getFramesPerSecond());
                         } else {
+                            // Not ideal value as it is a bit off, but for websites and other likes, there is no choice
                             pausedOnFrame = event.getFrame();
                         }
                         closeAll();
                         return;
                     }
 
-                    //context.logger.getLogger().debug("Finished sound playback of: " + soundId.getSoundInfo().getName());
+                    context.logger.getLogger().debug("Finished sound playback of: " + id.getSoundInfo().getTitle());
                     if (playIndex.get() > soundFileMap.size()) {
                         audioFilePlayer.setCurrentSound(null);
-                        //context.logger.getLogger().debug("Stopped playback");
+                        context.logger.getLogger().debug("Stopped playback");
                         stopSession();
                         return;
                     }
@@ -335,7 +349,7 @@ public class SoundEngine {
                         playSoundFile(id, 0, Integer.MAX_VALUE);
                     } else {
                         stopSession();
-                        //context.logger.getLogger().debug("null sound file found, stopping");
+                        context.logger.getLogger().debug("null sound file found, stopping");
                     }
                 });
                 t.start();
@@ -422,12 +436,12 @@ public class SoundEngine {
     }
 
     private void fillQueuedSoundFiles(List<SoundInfo> fileInfos) {
-        //context.logger.getLogger().debug("Doing recursive search for more sound files");
+        context.logger.getLogger().debug("Doing recursive search for more sound files");
         if (fileInfos.get(0).getPath() != null) {
             for (SoundInfo soundInfo : fileInfos) {
                 String filePath = soundInfo.getPath();
                 if (!new File(filePath).exists()) {
-                    //context.logger.getLogger().error(filePath + " does not exists - Unable to play sound");
+                    context.logger.getLogger().error(filePath + " does not exists - Unable to play sound");
                 } else {
                     recursiveSoundFileSearch(soundInfo);
                 }
@@ -437,7 +451,7 @@ public class SoundEngine {
                 addToQueuedSongs(soundInfo);
             }
         }
-        //context.logger.getLogger().debug("Found " + soundFileMap.size() + " files");
+        context.logger.getLogger().debug("Found " + soundFileMap.size() + " files");
     }
 
     private void resetSession() {
@@ -447,7 +461,7 @@ public class SoundEngine {
             player.close();
         }
         closeAll();
-        //context.logger.getLogger().debug("Resetting playback session");
+        context.logger.getLogger().debug("Resetting playback session");
     }
 
     /**
@@ -461,13 +475,13 @@ public class SoundEngine {
         SoundIdentity id = soundFileMap.get(playIndex.intValue());
 
         try {
-            //context.logger.getLogger().debug("Setting play duration");
+            context.logger.getLogger().debug("Setting play duration");
             id.getSoundInfo().getMetaData();
             int[] duration = setPlayDuration(id);
             Thread t = new Thread(() -> playSoundFile(id, duration[0], duration[1]));
             t.start();
         } catch (IndexOutOfBoundsException e) {
-            //context.logger.getLogger().warn("Start or end times were probably out of bounds", e);
+            context.logger.getLogger().warn("Start or end times were probably out of bounds", e);
         }
     }
 
