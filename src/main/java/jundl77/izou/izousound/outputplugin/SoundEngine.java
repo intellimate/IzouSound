@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * This class runs as a task in a thread pool and plays songs, it is controlled by the AudioFilePlayer.There should be
+ * This class plays songs by chaining threads, it is controlled by the AudioFilePlayer.There should be
  * no reason for using this class, as it is the "engine" that is running behind the AudioFilePlayer and should therefore
  * not be touched.
  */
@@ -49,7 +49,7 @@ public class SoundEngine {
     }
 
     /**
-     * Adds a new list with sound files to the blocking queue that will be processed as soon as possible
+     * Passes a new list with sound files to the run method, if all requirements are met (no null etc.)
      *
      * @param soundFilePaths the list of paths to sound files that should be played
      * @param startTime the start time of the sound file (in milliseconds)
@@ -74,7 +74,7 @@ public class SoundEngine {
     }
 
     /**
-     * Adds a new list with sound files to the blocking queue that will be processed as soon as possible
+     * Passes a new list with sound files to the run method, if all requirements are met (no null etc.)
      *
      * @param soundURLs the list of URLs to sound files that should be played
      * @param startTime the start time of the sound file (in milliseconds)
@@ -93,7 +93,7 @@ public class SoundEngine {
     }
 
     /**
-     * Adds a new List with sound files to the blocking queue that will be processed as soon as possible
+     * Passes a new list with sound files to the run method, if all requirements are met (no null etc.)
      *
      * @param soundFilePaths the list of paths to sound files that should be played
      *
@@ -142,6 +142,7 @@ public class SoundEngine {
         r.playbackFinished(null);
     }
 
+    // Closes all resources used in the playback (input stream and the advanced player)
     private void closeAll() {
         if (player != null) {
             player.close();
@@ -349,7 +350,7 @@ public class SoundEngine {
                         playSoundFile(id, 0, Integer.MAX_VALUE);
                     } else {
                         stopSession();
-                        context.logger.getLogger().debug("null sound file found, stopping");
+                        context.logger.getLogger().debug("a null sound file found, stopping");
                     }
                 });
                 t.start();
