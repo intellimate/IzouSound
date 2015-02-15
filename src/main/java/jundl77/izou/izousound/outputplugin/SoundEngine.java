@@ -393,7 +393,7 @@ public class SoundEngine {
             soundId.getSoundInfo().setStartTime(0);
         } else if (soundId.getSoundInfo().getStartTime() >= 0
                 && soundId.getSoundInfo().getStartTime() <= duration) {
-            startEndFrames[0] = soundId.getSoundInfo().getStartTime() * framesPerSecond;
+            startEndFrames[0] = soundId.getSoundInfo().getStartTime() / 1000 * framesPerSecond;
         } else {
             outOfBoundsError = true;
             throw new IndexOutOfBoundsException("start-time out of bounds");
@@ -402,11 +402,10 @@ public class SoundEngine {
         // Checks if end time exists
         if (soundId.getSoundInfo().getStopTime() == -1) {
             startEndFrames[1] = frameDuration;
-            soundId.getSoundInfo().setStopTime((int)soundId.getSoundInfo().getDuration() * 1000);
+            soundId.getSoundInfo().setStopTime((int)(soundId.getSoundInfo().getDuration() * 1000));
         } else if (soundId.getSoundInfo().getStopTime() >= 0
                 && soundId.getSoundInfo().getStopTime() <= duration) {
-            startEndFrames[1] = soundId.getSoundInfo().getStopTime()
-                    * (int)soundId.getSoundInfo().getFramesPerSecond();
+            startEndFrames[1] = soundId.getSoundInfo().getStopTime() / 1000 * framesPerSecond;
         } else {
             outOfBoundsError = true;
             throw new IndexOutOfBoundsException("end-time out of bounds");
