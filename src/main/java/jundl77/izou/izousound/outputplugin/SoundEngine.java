@@ -377,6 +377,7 @@ public class SoundEngine {
             }
         }
 
+        // Checks if start time exists
         if (soundId.getSoundInfo().getStartTime() == -1) {
             startEndFrames[0] = 0;
             soundId.getSoundInfo().setStartTime(0);
@@ -388,6 +389,7 @@ public class SoundEngine {
             throw new IndexOutOfBoundsException("start-time out of bounds");
         }
 
+        // Checks if end time exists
         if (soundId.getSoundInfo().getStopTime() == -1) {
             startEndFrames[1] = duration;
             soundId.getSoundInfo().setStopTime(duration);
