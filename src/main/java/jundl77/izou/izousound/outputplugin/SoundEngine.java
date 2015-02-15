@@ -362,18 +362,28 @@ public class SoundEngine {
         outOfBoundsError = false;
         int[] startEndFrames = new int[2];
 
-        // Checks if duration and frames per second exist
+        // Gets the duration that the sound in milliseconds
         int duration;
+        if (soundId.getSoundInfo().getDuration() != -1) {
+            duration = (int) soundId.getSoundInfo().getDuration() * 1000;
+        } else {
+            duration = Integer.MAX_VALUE;
+            context.logger.getLogger().warn("Unable to get duration of " + soundId.getSoundInfo().getTitle() +
+            ", so duration was set to Integer.MAX_VALUE");
+        }
+
+        // Checks if frame duration and frames per second exist
+        int frameDuration;
         int framesPerSecond;
         if (soundId.getSoundInfo().getFramesPerSecond() == -1) {
             framesPerSecond = 1;
-            duration = Integer.MAX_VALUE;
+            frameDuration = Integer.MAX_VALUE;
         } else {
             framesPerSecond = (int)soundId.getSoundInfo().getFramesPerSecond();
             if (soundId.getSoundInfo().getDuration() != -1) {
-                duration = (int)(soundId.getSoundInfo().getDuration() * framesPerSecond);
+                frameDuration = (int)(soundId.getSoundInfo().getDuration() * framesPerSecond);
             } else {
-                duration = Integer.MAX_VALUE;
+                frameDuration = Integer.MAX_VALUE;
             }
         }
 
@@ -391,8 +401,8 @@ public class SoundEngine {
 
         // Checks if end time exists
         if (soundId.getSoundInfo().getStopTime() == -1) {
-            startEndFrames[1] = duration;
-            soundId.getSoundInfo().setStopTime(duration);
+            startEndFrames[1] = frameDuration;
+            soundId.getSoundInfo().setStopTime((int)soundId.getSoundInfo().getDuration() * 1000);
         } else if (soundId.getSoundInfo().getStopTime() >= 0
                 && soundId.getSoundInfo().getStopTime() <= duration) {
             startEndFrames[1] = soundId.getSoundInfo().getStopTime()
