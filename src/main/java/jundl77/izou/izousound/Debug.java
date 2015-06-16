@@ -1,6 +1,5 @@
 package jundl77.izou.izousound;
 
-import intellimate.izou.addon.AddOn;
 import jundl77.izou.izousound.outputplugin.AudioFilePlayer;
 
 import java.util.ArrayList;
@@ -19,7 +18,7 @@ public class Debug {
 //        List<String> list = new ArrayList<>();
 //        list.add("/Users/julianbrendl/music");
 //        a.playFile(list);
-        AddOn addOn = new SoundAddOn();
+        //AddOnModule addOn = new SoundAddOn();
         AudioFilePlayer a = new AudioFilePlayer(null);
         //List<URL> list = new ArrayList<>();
         List<String> list = new ArrayList<>();

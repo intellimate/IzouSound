@@ -1,12 +1,13 @@
 package jundl77.izou.izousound;
 
-import intellimate.izou.activator.Activator;
-import intellimate.izou.addon.AddOn;
-import intellimate.izou.contentgenerator.ContentGenerator;
-import intellimate.izou.events.EventsController;
-import intellimate.izou.output.OutputExtension;
-import intellimate.izou.output.OutputPlugin;
+
 import jundl77.izou.izousound.outputplugin.SoundOutputPlugin;
+import org.intellimate.izou.sdk.activator.Activator;
+import org.intellimate.izou.sdk.addon.AddOn;
+import org.intellimate.izou.sdk.contentgenerator.ContentGenerator;
+import org.intellimate.izou.sdk.events.EventsController;
+import org.intellimate.izou.sdk.output.OutputExtension;
+import org.intellimate.izou.sdk.output.OutputPlugin;
 import ro.fortsoft.pf4j.Extension;
 
 @Extension

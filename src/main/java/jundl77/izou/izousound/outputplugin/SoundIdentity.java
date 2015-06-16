@@ -1,7 +1,8 @@
 package jundl77.izou.izousound.outputplugin;
 
 /**
- * Created by julianbrendl on 12/13/14.
+ * A SoundIdentity is a {@link SoundInfo} matched with its position in the playlist. This is done to make jumping back
+ * and forth between songs easy.
  */
 class SoundIdentity {
     private int id;

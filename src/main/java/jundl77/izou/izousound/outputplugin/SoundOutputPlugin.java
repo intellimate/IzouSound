@@ -1,10 +1,10 @@
 package jundl77.izou.izousound.outputplugin;
 
-import intellimate.izou.events.Event;
-import intellimate.izou.events.EventListener;
-import intellimate.izou.output.OutputPlugin;
-import intellimate.izou.resource.Resource;
-import intellimate.izou.system.Context;
+import org.intellimate.izou.sdk.Context;
+import org.intellimate.izou.sdk.contentgenerator.EventListener;
+import org.intellimate.izou.sdk.events.Event;
+import org.intellimate.izou.sdk.output.OutputPlugin;
+import org.intellimate.izou.sdk.resource.Resource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -103,7 +103,7 @@ public class SoundOutputPlugin extends OutputPlugin<SoundOutputData> implements 
 
     @Override
     public void renderFinalOutput() {
-        for (SoundOutputData outputData : pollTDoneList()) {
+        for (SoundOutputData outputData : ) {
             if (outputData.getPaths() != null) {
                 audioFilePlayer.playFile(outputData.getPaths(), outputData.getStartTime(), outputData.getStopTime());
             } else if (outputData.getURLs() != null) {

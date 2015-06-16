@@ -1,0 +1,161 @@
+package jundl77.izou.izousound.outputplugin;
+
+import com.mpatric.mp3agic.ID3v1;
+import com.mpatric.mp3agic.InvalidDataException;
+import com.mpatric.mp3agic.Mp3File;
+import com.mpatric.mp3agic.UnsupportedTagException;
+import jundl77.izou.izousound.AudioFileLoader;
+import org.intellimate.izou.sdk.Context;
+import org.intellimate.izou.sdk.frameworks.music.player.Playlist;
+import org.intellimate.izou.sdk.frameworks.music.player.TrackInfo;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Optional;
+
+/**
+ * The SoundLoader does two things. First it takes the general SDK music framework objects ({@link Playlist},
+ * {@link TrackInfo}) and converts them into internal data structures for the sound engine. This way IzouSound supports
+ * the music framework.
+ * <p>
+ *     Secondly, the sound loader updates soundInfos (and trackInfos) with their meta data (name, artist, etc.) once
+ *     it is about to be played and if the meta data is found.
+ * </p>
+ */
+class SoundLoader {
+    private Context context;
+    private SoundIdentityFactory soundIdentityFactory;
+
+    /**
+     * Creates a new SoundLoader object
+     *
+     * @param context the context of the addOn, mostly used for logging here
+     */
+    SoundLoader(Context context) {
+        this.context = context;
+        this.soundIdentityFactory = new SoundIdentityFactory();
+    }
+
+    /**
+     * Converts a {@link Playlist} object from the music framework to the internal data structure used by the
+     * SoundEngine to playback music.
+     * <p>
+     *     In the process, it is determined if the trackInfo is a URL or a sound file, and if it should be cropped or
+     *     not
+     * </p>
+     *
+     * @param playlist the playlist to convert to the internal data structure
+     * @return the internal data structure used by the SoundEngine
+     */
+    HashMap<Integer, SoundIdentity> convertFromPlaylist(Playlist playlist) {
+        HashMap<Integer, SoundIdentity> soundFileMap = new HashMap<>();
+
+        for (TrackInfo trackInfo : playlist.getQueue()) {
+            Optional<String> dataOpt = trackInfo.getData();
+
+            if (dataOpt.isPresent()) {
+                SoundInfo soundInfo = null;
+                String[] parts;
+                String data = dataOpt.get();
+
+                // See if the track info contains a file or a url, and transform it into a sound info
+                parts = data.split("$#&");
+                if (parts[0].equals(AudioFileLoader.FILE_TYPE)) {
+                    soundInfo = new SoundInfo(trackInfo, parts[1]);
+                } else if (parts[0].equals(AudioFileLoader.URL_TYPE)) {
+                    try {
+                        URL url = URI.create(parts[1]).toURL();
+                        soundInfo = new SoundInfo(trackInfo, url);
+                    } catch (MalformedURLException e) {
+                        context.getLogger().error("Unable to retrieve sound from url, skipping");
+                    }
+                }
+
+                if (soundInfo != null) {
+                    addSoundInfoToMap(soundFileMap, soundInfo, parts);
+                }
+            }
+        }
+
+        return soundFileMap;
+    }
+
+    private void addSoundInfoToMap(HashMap<Integer, SoundIdentity> soundFileMap, SoundInfo soundInfo, String[] parts) {
+        int start = -1;
+        int end = -1;
+        try {
+            if (parts.length >= 3) {
+                start = Integer.parseInt(parts[2]);
+            } else if (parts.length >= 4) {
+                end = Integer.parseInt(parts[3]);
+            }
+        } catch (NumberFormatException e) {
+            context.getLogger().error("Start or end value for track info is not an integer, setting to " +
+                    "full length");
+        }
+
+        soundInfo.setStartTime(start);
+        soundInfo.setStopTime(end);
+
+        SoundIdentity soundIdentity = soundIdentityFactory.make(soundInfo);
+        soundFileMap.put(soundIdentity.getId(), soundIdentity);
+    }
+
+    /**
+     * Gets the metadata of the soundInfo, that is song name, artist, album etc. if the data is found and then updates
+     * the track info (inside the soundInfo) in its playlist as well.
+     *
+     * @param playlist The playlist that contains the track info (inside the soundInfo)
+     * @param soundInfo The soundInfo for which to get its meta data
+     */
+    void getMetaData(Playlist playlist, SoundInfo soundInfo) {
+        soundInfo.setFramesPerSecond(1);
+
+        if (soundInfo.getPath() == null || soundInfo.getHasMetaData()) {
+            return;
+        }
+
+        try {
+            Mp3File mp3file = new Mp3File(soundInfo.getPath());
+            long framesPerSecond = mp3file.getFrameCount() / mp3file.getLengthInSeconds();
+            long duration = mp3file.getLengthInSeconds();
+
+            String year = null;
+            String genre = null;
+            if (mp3file.hasId3v1Tag()) {
+                ID3v1 id3v1Tag = mp3file.getId3v1Tag();
+                year = id3v1Tag.getYear();
+                genre = id3v1Tag.getGenre() + " " + id3v1Tag.getGenreDescription();
+            }
+
+            TrackInfo trackInfo = soundInfo.getTrackInfo();
+            Optional<TrackInfo> trackInfoOptional = trackInfo.update(trackInfo.getName().orElse(null),
+                    trackInfo.getArtist().orElse(null), trackInfo.getAlbum().orElse(null),
+                    trackInfo.getAlbumCover().orElse(null), trackInfo.getAlbumCoverFormat().orElse(null),
+                    trackInfo.getData().orElse(null), year, genre, duration + "", trackInfo.getBmp().orElse(null));
+
+            if (trackInfoOptional.isPresent()) {
+                trackInfo = trackInfoOptional.get();
+            } else {
+                context.getLogger().error("Unable to update trackInfo, using old one instead");
+            }
+
+            playlist.update(soundInfo.getTrackInfo(), trackInfo);
+
+            soundInfo.setTrackInfo(trackInfo);
+            soundInfo.setFramesPerSecond(framesPerSecond);
+        } catch (IOException | UnsupportedTagException | InvalidDataException e) {
+            this.context.getLogger().error("Error getting meta data for sound file: " + soundInfo.getPath(), e);
+        }
+    }
+
+    /**
+     * Resets the playback session on the SoundLoader side
+     */
+    void resetSession() {
+        soundIdentityFactory.startNewSession();
+    }
+}

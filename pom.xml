@@ -25,9 +25,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>intellimate.izou</groupId>
-            <artifactId>Izou</artifactId>
-            <version>1.0.2-SNAPSHOT</version>
+            <groupId>org.intellimate.izou</groupId>
+            <artifactId>sdk</artifactId>
+            <version>[0.5.0, 1.0.0)</version>
         </dependency>
         <dependency>
             <groupId>javazoom.jl</groupId>
@@ -40,17 +40,6 @@
             <version>0.8.3</version>
         </dependency>
     </dependencies>
-
-    <repositories>
-        <repository>
-            <id>Izou</id>
-            <url>https://raw.github.com/intellimate/Izou/mvn-repo/</url>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-            </snapshots>
-        </repository>
-    </repositories>
 
     <distributionManagement>
         <repository>

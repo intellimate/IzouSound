@@ -1,7 +1,8 @@
 package jundl77.izou.izousound.outputplugin;
 
 /**
- * {@code SoundIdentityFactory} handles sound file registration for each playback session
+ *  The SoundIdentityFactory creates sound identities, each time incrementing its index in the playlist, unless
+ *  startNewSession() is called
  */
 class SoundIdentityFactory {
     private int fileIdentityId;

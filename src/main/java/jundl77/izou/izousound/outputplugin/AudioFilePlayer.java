@@ -1,9 +1,17 @@
 package jundl77.izou.izousound.outputplugin;
 
-import intellimate.izou.system.Context;
+import org.intellimate.izou.events.EventModel;
+import org.intellimate.izou.sdk.Context;
+import org.intellimate.izou.sdk.frameworks.music.player.Playlist;
+import org.intellimate.izou.sdk.frameworks.music.player.TrackInfo;
+import org.intellimate.izou.sdk.frameworks.music.player.template.Player;
+import org.intellimate.izou.sdk.frameworks.music.resources.PlaylistResource;
+import org.intellimate.izou.sdk.frameworks.music.resources.TrackInfoResource;
 
 import java.net.URL;
 import java.util.List;
+import java.util.Optional;
+import java.util.Queue;
 
 /**
  * The {@code AudioFilePlayer} is a wrapper for the {@code SoundEngine}, which allows the AudioFilePlayer to put the
@@ -18,7 +26,7 @@ import java.util.List;
  *     be used to play music.
  * </p>
  */
-public class AudioFilePlayer {
+public class AudioFilePlayer extends Player {
     private SoundEngine soundEngine;
     private SoundIdentity currentSound;
     private Context context;
@@ -33,9 +41,12 @@ public class AudioFilePlayer {
      * @param context The context of the OutputPlugin
      */
     public AudioFilePlayer(Context context) {
+        super(context, );
         this.context = context;
         this.soundEngine = new SoundEngine(context, this);
         //context.threadPool.getThreadPool().execute(soundEngine);
+
+        //commandHandler for advanced functionality
     }
 
     /**
@@ -110,7 +121,7 @@ public class AudioFilePlayer {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
-                context.logger.getLogger().error("Error while sleeping", e);
+                context.getLogger().error("Error while sleeping", e);
             }
         }
     }
@@ -202,5 +213,35 @@ public class AudioFilePlayer {
      */
     public boolean isOutOfBoundsError() {
         return soundEngine.isOutOfBoundsError();
+    }
+
+    @Override
+    public void mute() {
+
+    }
+
+    @Override
+    public void unMute() {
+
+    }
+
+    @Override
+    public void stopSound() {
+        stop();
+    }
+
+    @Override
+    public void play(EventModel eventModel) {
+        Optional<Playlist> playlistTemp = PlaylistResource.getPlaylist(eventModel);
+        Optional<TrackInfo> trackInfoTemp = TrackInfoResource.getTrackInfo(eventModel);
+
+        if (playlistTemp.isPresent()) {
+            Playlist playlist = playlistTemp.get();
+            List<TrackInfo> trackInfos = playlist.getQueue();
+        }
+
+        if (trackInfoTemp.isPresent()) {
+            TrackInfo trackInfo = trackInfoTemp.get();
+        }
     }
 }
