@@ -4,7 +4,7 @@ import com.mpatric.mp3agic.ID3v1;
 import com.mpatric.mp3agic.InvalidDataException;
 import com.mpatric.mp3agic.Mp3File;
 import com.mpatric.mp3agic.UnsupportedTagException;
-import jundl77.izou.izousound.AudioFileLoader;
+import jundl77.izou.izousound.PlaylistGenerator;
 import org.intellimate.izou.sdk.Context;
 import org.intellimate.izou.sdk.frameworks.music.player.Playlist;
 import org.intellimate.izou.sdk.frameworks.music.player.TrackInfo;
@@ -62,10 +62,10 @@ class SoundLoader {
                 String data = dataOpt.get();
 
                 // See if the track info contains a file or a url, and transform it into a sound info
-                parts = data.split("$#&");
-                if (parts[0].equals(AudioFileLoader.FILE_TYPE)) {
+                parts = data.split(PlaylistGenerator.DATA_SEPERATOR);
+                if (parts[0].equals(PlaylistGenerator.FILE_TYPE)) {
                     soundInfo = new SoundInfo(trackInfo, parts[1]);
-                } else if (parts[0].equals(AudioFileLoader.URL_TYPE)) {
+                } else if (parts[0].equals(PlaylistGenerator.URL_TYPE)) {
                     try {
                         URL url = URI.create(parts[1]).toURL();
                         soundInfo = new SoundInfo(trackInfo, url);
@@ -123,19 +123,32 @@ class SoundLoader {
             long framesPerSecond = mp3file.getFrameCount() / mp3file.getLengthInSeconds();
             long duration = mp3file.getLengthInSeconds();
 
+            String name = null;
+            String artist = null;
+            String album = null;
             String year = null;
             String genre = null;
             if (mp3file.hasId3v1Tag()) {
                 ID3v1 id3v1Tag = mp3file.getId3v1Tag();
+                name = id3v1Tag.getTitle();
+                artist = id3v1Tag.getArtist();
+                album = id3v1Tag.getAlbum();
                 year = id3v1Tag.getYear();
                 genre = id3v1Tag.getGenre() + " " + id3v1Tag.getGenreDescription();
             }
 
             TrackInfo trackInfo = soundInfo.getTrackInfo();
-            Optional<TrackInfo> trackInfoOptional = trackInfo.update(trackInfo.getName().orElse(null),
-                    trackInfo.getArtist().orElse(null), trackInfo.getAlbum().orElse(null),
+
+            // In case the name is not found using the id3v1 tag, use the previously extracted name instead, if it is
+            // also not null
+            if (trackInfo.getName().isPresent() && trackInfo.getName().get() != null && name == null) {
+                name = trackInfo.getName().get();
+            }
+
+            Optional<TrackInfo> trackInfoOptional = trackInfo.update(name, artist, album,
                     trackInfo.getAlbumCover().orElse(null), trackInfo.getAlbumCoverFormat().orElse(null),
                     trackInfo.getData().orElse(null), year, genre, duration + "", trackInfo.getBmp().orElse(null));
+
 
             if (trackInfoOptional.isPresent()) {
                 trackInfo = trackInfoOptional.get();

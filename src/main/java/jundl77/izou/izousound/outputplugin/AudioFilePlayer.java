@@ -52,72 +52,20 @@ public class AudioFilePlayer extends Player {
     /**
      * Starts a new playback session with the paths passed to it as an array
      *
-     * @param filePath {@code filePath} can be a path to a file or directory. Directories will be recursively searched
+     * @param playlist {@code filePath} can be a path to a file or directory. Directories will be recursively searched
      *                                 for any more found eligible sound files.
      */
-    public void playFile(List<String> filePath) {
-        if (soundEngine.getState() != null && soundEngine.getState().equals("PLAYING")) {
+    public void playPlaylist(Playlist playlist) {
+        if (soundEngine.getState() != null && soundEngine.getState().equals(SoundEngine.PLAYING_STATE)) {
             soundEngine.stopSession();
         }
 
-        soundEngine.addSoundFiles(filePath);
-        waitForReady();
-    }
-
-    /**
-     * Starts a new playback session with the paths passed to it as an array
-     * <p>
-     *     This should probably only be used when 1 sound file is added, otherwise all sound files will play from
-     *     {@code startTime} to {@code endTime}
-     * </p>
-     * @param filePath {@code filePath} can be a path to a file or directory. Directories will be recursively searched
-     *                                 for any more found eligible sound files.
-     * @param startTime the time all sound file in {@code filePath} should start in milliseconds
-     * @param endTime the time all sound files in {@code filePath} should end in milliseconds
-     */
-    public void playFile(List<String> filePath, int startTime, int endTime) {
-        if (soundEngine.getState() != null && soundEngine.getState().equals("PLAYING")) {
-            soundEngine.stopSession();
-        }
-
-        soundEngine.addSoundFiles(filePath, startTime, endTime);
-        waitForReady();
-    }
-
-    /**
-     * Starts a new playback session with the URLs passed to it as an array
-     * Only HTTP is supported (No HTTPS)
-     *
-     * @param url {@code filePath} a valid URL to a sound file
-     *                            Ex: http://www.example.com/test.mp3
-     */
-    public void playURL(List<URL> url) {
-        playURL(url, -1, -1);
-    }
-
-    /**
-     * Starts a new playback session with the URLs passed to it as an array
-     * Only HTTP is supported (No HTTPS)
-     * <p>
-     *     This should probably only be used when 1 sound file is added, otherwise all sound files will play from
-     *     {@code startTime} to {@code endTime}
-     * </p>
-     * @param url {@code filePath} a valid URL to a sound file
-     *                            Ex: http://www.example.com/test.mp3
-     * @param startTime the time all sound file in {@code filePath} should start in milliseconds
-     * @param endTime the time all sound files in {@code filePath} should end in milliseconds
-     */
-    public void playURL(List<URL> url, int startTime, int endTime) {
-        if (soundEngine.getState() != null && soundEngine.getState().equals("PLAYING")) {
-            soundEngine.stopSession();
-        }
-
-        soundEngine.addSoundURL(url, startTime, endTime);
+        soundEngine.run(playlist);
         waitForReady();
     }
 
     private void waitForReady() {
-        while (soundEngine.getState() == null || !soundEngine.getState().equals("PLAYING")) {
+        while (soundEngine.getState() == null || !soundEngine.getState().equals(SoundEngine.PLAYING_STATE)) {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
