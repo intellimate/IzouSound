@@ -52,6 +52,8 @@ class SoundLoader {
      * @return the internal data structure used by the SoundEngine
      */
     HashMap<Integer, SoundIdentity> convertFromPlaylist(Playlist playlist) {
+        soundIdentityFactory.startNewSession();
+
         HashMap<Integer, SoundIdentity> soundFileMap = new HashMap<>();
 
         for (TrackInfo trackInfo : playlist.getQueue()) {
@@ -122,7 +124,7 @@ class SoundLoader {
         try {
             Mp3File mp3file = new Mp3File(soundInfo.getPath());
             long framesPerSecond = mp3file.getFrameCount() / mp3file.getLengthInSeconds();
-            long duration = mp3file.getLengthInSeconds();
+            long duration = mp3file.getLengthInMilliseconds();
 
             String name = null;
             String artist = null;
@@ -146,30 +148,19 @@ class SoundLoader {
                 name = trackInfo.getName().get();
             }
 
-            Optional<TrackInfo> trackInfoOptional = trackInfo.update(name, artist, album,
-                    trackInfo.getAlbumCover().orElse(null), trackInfo.getAlbumCoverFormat().orElse(null),
-                    trackInfo.getData().orElse(null), year, genre, duration + "", trackInfo.getBmp().orElse(null));
-
-
-            if (trackInfoOptional.isPresent()) {
-                trackInfo = trackInfoOptional.get();
-            } else {
-                context.getLogger().error("Unable to update trackInfo, using old one instead");
-            }
+            final TrackInfo finalTrackInfo = trackInfo;
+            trackInfo = new TrackInfo(name, artist, album,
+                    trackInfo.getAlbumCover().orElse(null), trackInfo.getAlbumCover()
+                            .flatMap(unused -> finalTrackInfo.getAlbumCoverFormat()).orElse(null),
+                    trackInfo.getData().orElse(null), year, genre, trackInfo.getBmp().orElse(null), duration);
 
             playlist.update(soundInfo.getTrackInfo(), trackInfo);
 
             soundInfo.setTrackInfo(trackInfo);
             soundInfo.setFramesPerSecond(framesPerSecond);
+            soundInfo.setHasMetaData(true);
         } catch (IOException | UnsupportedTagException | InvalidDataException e) {
-            this.context.getLogger().error("Error getting meta data for sound file: " + soundInfo.getPath(), e);
+            context.getLogger().error("Error getting meta data for sound file: " + soundInfo.getPath(), e);
         }
-    }
-
-    /**
-     * Resets the playback session on the SoundLoader side
-     */
-    void resetSession() {
-        soundIdentityFactory.startNewSession();
     }
 }

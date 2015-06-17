@@ -1,13 +1,13 @@
 package jundl77.izou.izousound;
 
 
-import jundl77.izou.izousound.outputplugin.SoundOutputPlugin;
+import jundl77.izou.izousound.outputplugin.AudioFilePlayer;
 import org.intellimate.izou.sdk.activator.Activator;
 import org.intellimate.izou.sdk.addon.AddOn;
 import org.intellimate.izou.sdk.contentgenerator.ContentGenerator;
 import org.intellimate.izou.sdk.events.EventsController;
 import org.intellimate.izou.sdk.output.OutputExtension;
-import org.intellimate.izou.sdk.output.OutputPlugin;
+import org.intellimate.izou.sdk.output.OutputPluginArgument;
 import ro.fortsoft.pf4j.Extension;
 
 @Extension
@@ -15,6 +15,7 @@ public class SoundAddOn extends AddOn {
 
     @SuppressWarnings("WeakerAccess")
     public static final String ID = SoundAddOn.class.getCanonicalName();
+    private AudioFilePlayer audioFilePlayer;
 
     public SoundAddOn() {
         super(ID);
@@ -22,10 +23,12 @@ public class SoundAddOn extends AddOn {
 
     @Override
     public void prepare() {
+        audioFilePlayer = new AudioFilePlayer(getContext());
     }
 
     @Override
     public Activator[] registerActivator() {
+        //AudioPlayerController audioPlayerController = new AudioPlayerController(getContext(),audioFilePlayer);
         return null;
     }
 
@@ -40,9 +43,9 @@ public class SoundAddOn extends AddOn {
     }
 
     @Override
-    public OutputPlugin[] registerOutputPlugin() {
-        OutputPlugin[] outputPlugins = new OutputPlugin[1];
-        outputPlugins[0] = new SoundOutputPlugin(getContext());
+    public OutputPluginArgument[] registerOutputPlugin() {
+        OutputPluginArgument[] outputPlugins = new OutputPluginArgument[1];
+        outputPlugins[0] = audioFilePlayer;
         return outputPlugins;
     }
 

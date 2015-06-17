@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * The {@code AudioFilePlayer} is a wrapper for the {@code SoundEngine}. It controls the sound-engine.
  */
 public class AudioFilePlayer extends Player {
+    public static final String ID = AudioFilePlayer.class.getCanonicalName();
     private SoundEngine soundEngine;
     private SoundIdentity currentSound;
     private Context context;
@@ -30,11 +31,11 @@ public class AudioFilePlayer extends Player {
      * @param context The context of the OutputPlugin
      */
     public AudioFilePlayer(Context context) {
-        super(context, , true, true, true, true, true, true);
+        super(context, ID, true, true, true, true, true, true, true);
         this.context = context;
         this.soundEngine = new SoundEngine(context, this);
 
-        CommandHandler commandHandler = createCommandHandler();
+        CommandHandler commandHandler = getCommandHandler();
         commandHandler.setNextPreviousController(command -> {
             if (command.equals(CommandResource.NEXT)) {
                 nextSound();

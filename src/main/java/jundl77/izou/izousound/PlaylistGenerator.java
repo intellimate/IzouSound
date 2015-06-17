@@ -18,9 +18,10 @@ import java.util.stream.Collectors;
 public class PlaylistGenerator {
     public static String URL_TYPE = "URL";
     public static String FILE_TYPE = "FILE";
-    public static String DATA_SEPERATOR = "$#&";
+    public static String DATA_SEPERATOR = "@@@";
 
     private Context context;
+    private TrackInfoGenerator trackInfoGenerator;
 
     /**
      * Creates a new PlaylistGenerator object
@@ -29,6 +30,7 @@ public class PlaylistGenerator {
      */
     public PlaylistGenerator(Context context) {
         this.context = context;
+        this.trackInfoGenerator = new TrackInfoGenerator();
     }
 
     /**
@@ -44,7 +46,7 @@ public class PlaylistGenerator {
         context.getLogger().debug("Creating file based playlist..");
         List<TrackInfo> trackInfos = soundFilePaths
                 .stream()
-                .map(path -> generatFileTrackInfo(path, startTime, stopTime))
+                .map(path -> trackInfoGenerator.generatFileTrackInfo(path, startTime, stopTime))
                 .collect(Collectors.toList());
         context.getLogger().debug("Found " + trackInfos.size() + " items");
 
@@ -102,7 +104,7 @@ public class PlaylistGenerator {
         context.getLogger().debug("Creating URL based playlist..");
         List<TrackInfo> trackInfos = soundURLs
                 .stream()
-                .map(url -> generatURLTrackInfo(url, startTime, stopTime))
+                .map(url -> trackInfoGenerator.generatURLTrackInfo(url, startTime, stopTime))
                 .collect(Collectors.toList());
         context.getLogger().debug("Found " + trackInfos.size() + " items");
 
@@ -145,7 +147,7 @@ public class PlaylistGenerator {
         if (new File(filePath).isFile()
                 && (filePath.endsWith(".mp3")
                 || filePath.endsWith(".wav"))) {
-            trackInfos.add(generatFileTrackInfo(filePath, -1, -1));
+            trackInfos.add(trackInfoGenerator.generatFileTrackInfo(filePath, -1, -1));
         } else if (new File(filePath).isDirectory()) {
             File[] files = new File(filePath).listFiles();
             if (files == null) {
@@ -155,36 +157,5 @@ public class PlaylistGenerator {
                 recursiveSoundFileSearch(trackInfos, path.getAbsolutePath());
             }
         }
-    }
-
-    /**
-     * Generates a file based track info from the path, start and stop time
-     *
-     * @param path path to the sound file
-     * @param startTime the start time of the sound file (-1 for start from beginning)
-     * @param endTime the end time of the sound file (-1 for full length)
-     * @return a new TrackInfo generated based on the above data
-     */
-    private TrackInfo generatFileTrackInfo(String path, int startTime, int endTime) {
-        String data = FILE_TYPE + DATA_SEPERATOR + path + DATA_SEPERATOR + startTime + DATA_SEPERATOR + endTime;
-        String[] pathParts = path.split(File.separator);
-        String name = pathParts[pathParts.length - 1];
-        return new TrackInfo(name, null, null, null, null, data, null, null, null, null);
-    }
-
-    /**
-     * Generates a URL based track info from the URL, start and stop time
-     *
-     * @param url url to the sound file
-     * @param startTime the start time of the sound file (-1 for start from beginning)
-     * @param endTime the end time of the sound file (-1 for full length)
-     * @return a new TrackInfo generated based on the above data
-     */
-    private TrackInfo generatURLTrackInfo(URL url, int startTime, int endTime) {
-        String data = URL_TYPE + DATA_SEPERATOR + url.toExternalForm() + DATA_SEPERATOR + startTime + DATA_SEPERATOR
-                + endTime;
-        String[] pathParts = url.toExternalForm().split("/");
-        String name = pathParts[pathParts.length - 1];
-        return new TrackInfo(name, null, null, null, null, data, null, null, null, null);
     }
 }

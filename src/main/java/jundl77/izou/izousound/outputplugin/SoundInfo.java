@@ -114,7 +114,7 @@ class SoundInfo {
 
     public long getDuration() {
         if (trackInfo.getDuration().isPresent()) {
-            return Long.parseLong(trackInfo.getDuration().get());
+            return trackInfo.getDuration().get() / 1000;
         } else {
             return -1;
         }

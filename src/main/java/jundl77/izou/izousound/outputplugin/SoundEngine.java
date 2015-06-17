@@ -12,7 +12,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -30,7 +30,9 @@ class SoundEngine {
     private InputStream inputStream;
     private SoundLoader soundLoader;
     private HashMap<Integer, SoundIdentity> soundFileMap;
+    private HashMap<Integer, SoundIdentity> shuffeledSoundFileMap;
     private Playlist playlist;
+    private Playlist shuffeledPlaylist;
     private AtomicInteger playIndex;
     private AudioFilePlayer audioFilePlayer;
     private Context context;
@@ -56,6 +58,7 @@ class SoundEngine {
         this.audioFilePlayer = audioFilePlayer;
         this.playIndex.set(-1);
         this.state = null;
+        this.soundFileMap = new HashMap<>();
         audioFilePlayer.setCurrentSound(null);
 
         this.shuffle = new AtomicBoolean(false);
@@ -98,9 +101,11 @@ class SoundEngine {
      * Stops the current playback entirely
      */
     private void stopSound() {
-        PlaybackListener r = player.getPlayBackListener();
-        closeAll();
-        r.playbackFinished(null);
+        if (player != null) {
+            PlaybackListener r = player.getPlayBackListener();
+            closeAll();
+            r.playbackFinished(null);
+        }
     }
 
     // Closes all resources used in the playback (input stream and the advanced player)
@@ -171,8 +176,11 @@ class SoundEngine {
         }
 
         context.getLogger().debug("Started playing next sound");
-        if (playIndex.get() < soundFileMap.size() - 1) {
-            handleNextIndex();
+        if (repeatSong.get()) {
+            // Decrement index by 1 so that the loop will increase it back to the current song
+            playIndex.decrementAndGet();
+            stopSound();
+        } else if (playIndex.get() < soundFileMap.size() - 1) {
             stopSound();
         } else if (repeatPlaylist.get()) {
             // The index is set to -1 and not 0 because the loop will increment the index to 0 on its own
@@ -209,8 +217,13 @@ class SoundEngine {
         }
         context.getLogger().debug("Started playing previous sound");
 
-        if (playIndex.get() > 0) {
-            handlePreviousIndex();
+        if (repeatSong.get()) {
+            // Decrement index by 1 so that the loop will increase it back to the current song
+            playIndex.decrementAndGet();
+            stopSound();
+        } else if (playIndex.get() > 0) {
+            playIndex.decrementAndGet();
+            playIndex.decrementAndGet();
             stopSound();
         } else if (repeatPlaylist.get()) {
             playIndex.set(soundFileMap.size() - 2);
@@ -218,32 +231,6 @@ class SoundEngine {
         } else {
             stopSession();
         }
-    }
-
-    private void handleNextIndex() {
-        if (shuffle.get()) {
-            // Set index to a random value between 0 and playlist.size - 1
-            playIndex.set((int) (Math.random() * playlist.getQueue().size()));
-        } else if (repeatSong.get()) {
-            // Decrement index by 1 so that the loop will increase it back to the current song
-            playIndex.decrementAndGet();
-        } else {
-            // Increment sound index by 1 (this is where the loop "increments itself")
-            playIndex.incrementAndGet();
-        }
-    }
-
-    private void handlePreviousIndex() {
-        if (repeatSong.get()) {
-            // Decrement index by 1 so that the loop will increase it back to the current song
-            playIndex.decrementAndGet();
-        } else {
-            // The index is decreased by 2 and not 0 because the loop will increment the index to 0 on its own
-            playIndex.decrementAndGet();
-            playIndex.decrementAndGet();
-        }
-
-        // Shuffle is ignored because on previous song the song should not be shuffled
     }
 
     /**
@@ -289,10 +276,7 @@ class SoundEngine {
             }
         }
 
-        // Gets the meta data and updates the sound id to the currently being played song
-        soundLoader.getMetaData(playlist, soundId.getSoundInfo());
-        audioFilePlayer.setCurrentSound(soundId);
-        playlist.setNewPosition(playIndex.get());
+        updatePlaylist(soundId);
 
         context.getLogger().debug("Preparing for playback");
         if (inputStream == null) {
@@ -352,8 +336,16 @@ class SoundEngine {
                         stopSession();
                         return;
                     }
-                    nextFile();
-                    SoundIdentity id = soundFileMap.get(playIndex.intValue());
+
+                    // Increment sound index by 1 (this is where the loop "increments itself")
+                    playIndex.incrementAndGet();
+
+                    SoundIdentity id;
+                    if (shuffle.get()) {
+                        id = shuffeledSoundFileMap.get(playIndex.intValue());
+                    } else {
+                        id = soundFileMap.get(playIndex.intValue());
+                    }
                     closeAll();
 
                     if (id != null) {
@@ -366,6 +358,23 @@ class SoundEngine {
                 t.start();
             }
         });
+    }
+
+    /**
+     * Gets the meta data and updates the sound id to the currently being played song
+     *
+     * @param soundId the sound id to update
+     */
+    private void updatePlaylist(SoundIdentity soundId) {
+        if (shuffle.get()) {
+            soundLoader.getMetaData(shuffeledPlaylist, soundId.getSoundInfo());
+            shuffeledPlaylist.setNewPosition(playIndex.get());
+        } else {
+            soundLoader.getMetaData(playlist, soundId.getSoundInfo());
+            playlist.setNewPosition(playIndex.get());
+        }
+
+        audioFilePlayer.setCurrentSound(soundId);
     }
 
     private int[] setPlayDuration(SoundIdentity soundId) throws IndexOutOfBoundsException {
@@ -412,7 +421,7 @@ class SoundEngine {
         // Checks if end time exists
         if (soundId.getSoundInfo().getStopTime() == -1) {
             startEndFrames[1] = frameDuration;
-            soundId.getSoundInfo().setStopTime((int)(soundId.getSoundInfo().getDuration() * 1000));
+            soundId.getSoundInfo().setStopTime((int) (soundId.getSoundInfo().getDuration() * 1000));
         } else if (soundId.getSoundInfo().getStopTime() >= 0
                 && soundId.getSoundInfo().getStopTime() <= duration) {
             startEndFrames[1] = soundId.getSoundInfo().getStopTime() / 1000 * framesPerSecond;
@@ -424,7 +433,6 @@ class SoundEngine {
     }
 
     private void resetSession() {
-        soundLoader.resetSession();
         soundFileMap.clear();
         playlist = null;
         if (player != null) {
@@ -442,11 +450,23 @@ class SoundEngine {
         playIndex.set(0);
         soundFileMap = soundLoader.convertFromPlaylist(playlist);
         this.playlist = playlist;
-        SoundIdentity id = soundFileMap.get(playIndex.intValue());
+        SoundIdentity id;
+        if (shuffle.get()) {
+            long seed = System.nanoTime();
+            List<TrackInfo> trackInfos = new ArrayList<>(playlist.getQueue());
+            Collections.shuffle(trackInfos, new Random(seed));
+            shuffeledPlaylist = new Playlist(trackInfos);
+            shuffeledSoundFileMap = soundLoader.convertFromPlaylist(shuffeledPlaylist);
+
+            id = shuffeledSoundFileMap.get(playIndex.intValue());
+            soundLoader.getMetaData(shuffeledPlaylist, id.getSoundInfo());
+        } else {
+            id = soundFileMap.get(playIndex.intValue());
+            soundLoader.getMetaData(this.playlist, id.getSoundInfo());
+        }
 
         try {
             context.getLogger().debug("Setting play duration");
-            soundLoader.getMetaData(playlist, id.getSoundInfo());
             int[] duration = setPlayDuration(id);
             Thread t = new Thread(() -> playSoundFile(id, duration[0], duration[1]));
             t.start();
@@ -480,6 +500,14 @@ class SoundEngine {
      */
     synchronized void setShuffle(AtomicBoolean shuffle) {
         this.shuffle = shuffle;
+
+        if (shuffle.get() && playlist != null) {
+            long seed = System.nanoTime();
+            List<TrackInfo> trackInfos = new ArrayList<>(playlist.getQueue());
+            Collections.shuffle(trackInfos, new Random(seed));
+            shuffeledPlaylist = new Playlist(trackInfos);
+            shuffeledSoundFileMap = soundLoader.convertFromPlaylist(shuffeledPlaylist);
+        }
     }
 
     /**
