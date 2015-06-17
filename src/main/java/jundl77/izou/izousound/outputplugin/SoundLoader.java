@@ -9,6 +9,7 @@ import org.intellimate.izou.sdk.Context;
 import org.intellimate.izou.sdk.frameworks.music.player.Playlist;
 import org.intellimate.izou.sdk.frameworks.music.player.TrackInfo;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -63,14 +64,14 @@ class SoundLoader {
 
                 // See if the track info contains a file or a url, and transform it into a sound info
                 parts = data.split(PlaylistGenerator.DATA_SEPERATOR);
-                if (parts[0].equals(PlaylistGenerator.FILE_TYPE)) {
+                if (parts[0].equals(PlaylistGenerator.FILE_TYPE) && new File(parts[1]).exists()) {
                     soundInfo = new SoundInfo(trackInfo, parts[1]);
                 } else if (parts[0].equals(PlaylistGenerator.URL_TYPE)) {
                     try {
                         URL url = URI.create(parts[1]).toURL();
                         soundInfo = new SoundInfo(trackInfo, url);
                     } catch (MalformedURLException e) {
-                        context.getLogger().error("Unable to retrieve sound from url, skipping");
+                        context.getLogger().error("Unable to turn given url into a URL object, skipping");
                     }
                 }
 

@@ -12,6 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -38,6 +39,10 @@ class SoundEngine {
     private volatile String state;
     private long startSecond;
 
+    private AtomicBoolean shuffle;
+    private AtomicBoolean repeatPlaylist;
+    private AtomicBoolean repeatSong;
+
     /**
      * Creates a new sound-object in order to play sound files
      *
@@ -51,6 +56,10 @@ class SoundEngine {
         this.playIndex.set(-1);
         this.state = null;
         audioFilePlayer.setCurrentSound(null);
+
+        this.shuffle = new AtomicBoolean(false);
+        this.repeatPlaylist = new AtomicBoolean(true);
+        this.repeatSong = new AtomicBoolean(false);
     }
 
     /**
@@ -58,14 +67,14 @@ class SoundEngine {
      *
      * @return state of player
      */
-    public synchronized String getState() {
+    synchronized String getState() {
         return state;
     }
 
     /**
      * Resume the sound if there is sound to resume and if it is paused
      */
-    public void resumeSound() throws IllegalStateException {
+    void resumeSound() throws IllegalStateException {
         if (getState() == null) {
             context.getLogger().warn("State is null, quitting");
             return;
@@ -112,7 +121,7 @@ class SoundEngine {
     /**
      * Stops playback for entire session, the task will go back to the blocking-queue
      */
-    public void stopSession() {
+    void stopSession() {
         if (getState() != null) {
             closeAll();
             resetSession();
@@ -126,7 +135,7 @@ class SoundEngine {
     /**
      * Pauses sound
      */
-    public void pauseSound() {
+    void pauseSound() {
         if (getState() != null) {
             paused = true;
             player.stop();
@@ -136,9 +145,10 @@ class SoundEngine {
     }
 
     /**
-     * Jumps to next sound-file if there is one, else jumps back to the start
+     * Jumps to next sound-file if there is one, else jumps back to the start if loopPlaylist is set to true, else stop
+     * the current playback session. If shuffle is set to true, a random song is chosen next
      */
-    public void nextFile() {
+    void nextFile() {
         if (getState() == null) {
             context.getLogger().warn("State is null, quitting");
             return;
@@ -146,19 +156,21 @@ class SoundEngine {
 
         context.getLogger().debug("Started playing next sound");
         if (playIndex.get() < soundFileMap.size() - 1) {
-            // No need to increment index because loop does it on its own
+            handleNextIndex();
             stopSound();
-        } else {
+        } else if (repeatPlaylist.get()) {
             // The index is set to -1 and not 0 because the loop will increment the index to 0 on its own
             playIndex.set(-1);
             stopSound();
+        } else {
+            stopSession();
         }
     }
 
     /**
      * Jumps back to beginning of current sound file if one is playing
      */
-    public void restartFile() {
+    void restartFile() {
         if (getState() == null) {
             context.getLogger().warn("State is null, quitting");
             return;
@@ -174,7 +186,7 @@ class SoundEngine {
     /**
      * Jumps to previous sound-file if there is one, else jump to last sound-file
      */
-    public void previousFile() {
+    void previousFile() {
         if (getState() == null) {
             context.getLogger().warn("State is null, quitting");
             return;
@@ -182,15 +194,40 @@ class SoundEngine {
         context.getLogger().debug("Started playing previous sound");
 
         if (playIndex.get() > 0) {
-            //the index is decreased by 2 and not 0 because the loop will increment the index to 0 on its own
-            playIndex.decrementAndGet();
-            playIndex.decrementAndGet();
-
+            handlePreviousIndex();
             stopSound();
-        } else {
+        } else if (repeatPlaylist.get()) {
             playIndex.set(soundFileMap.size() - 2);
             stopSound();
+        } else {
+            stopSession();
         }
+    }
+
+    private void handleNextIndex() {
+        if (shuffle.get()) {
+            // Set index to a random value between 0 and playlist.size - 1
+            playIndex.set((int) (Math.random() * playlist.getQueue().size()));
+        } else if (repeatSong.get()) {
+            // Decrement index by 1 so that the loop will increase it back to the current song
+            playIndex.decrementAndGet();
+        } else {
+            // Increment sound index by 1 (this is where the loop "increments itself")
+            playIndex.incrementAndGet();
+        }
+    }
+
+    private void handlePreviousIndex() {
+        if (repeatSong.get()) {
+            // Decrement index by 1 so that the loop will increase it back to the current song
+            playIndex.decrementAndGet();
+        } else {
+            // The index is decreased by 2 and not 0 because the loop will increment the index to 0 on its own
+            playIndex.decrementAndGet();
+            playIndex.decrementAndGet();
+        }
+
+        // Shuffle is ignored because on previous song the song should not be shuffled
     }
 
     /**
@@ -198,7 +235,7 @@ class SoundEngine {
      *
      * @param volume volume level (from 0 - 100)
      */
-    public void controlVolume(double volume) {
+    void controlVolume(double volume) {
         if (getState() == null) {
             context.getLogger().warn("State is null, quitting");
             return;
@@ -263,7 +300,6 @@ class SoundEngine {
             context.getLogger().debug("Started playback of " + soundId.getSoundInfo().getTrackInfo().getName());
             player.play(startFrame, endFrame);
         } catch (JavaLayerException e) {
-            e.printStackTrace();
             context.getLogger().error("Error playing sound file", e);
         }
 
@@ -300,7 +336,7 @@ class SoundEngine {
                         stopSession();
                         return;
                     }
-                    playIndex.incrementAndGet();
+                    nextFile();
                     SoundIdentity id = soundFileMap.get(playIndex.intValue());
                     closeAll();
 
@@ -385,7 +421,7 @@ class SoundEngine {
     /**
      * Run method for sound object, gets started on instantiation and waits for paths to process
      */
-    public void run(Playlist playlist) {
+    void run(Playlist playlist) {
         resetSession();
         playIndex.set(0);
         soundFileMap = soundLoader.convertFromPlaylist(playlist);
@@ -408,7 +444,61 @@ class SoundEngine {
      *
      * @return true if an out of bounds error occurred with play indices, else false
      */
-    public boolean isOutOfBoundsError() {
+    synchronized boolean isOutOfBoundsError() {
         return outOfBoundsError;
+    }
+
+    /**
+     * Returns true if the player is set to shuffle the current playlist, else false
+     *
+     * @return true if the player is set to shuffle the current playlist, else false
+     */
+    synchronized AtomicBoolean getShuffle() {
+        return shuffle;
+    }
+
+    /**
+     * Sets whether or not the current playlist is to be shuffled
+     *
+     * @param shuffle true if the playlist is to be shuffled, else false
+     */
+    synchronized void setShuffle(AtomicBoolean shuffle) {
+        this.shuffle = shuffle;
+    }
+
+    /**
+     * Returns true if the player is set to repeat the current playlist, else false
+     *
+     * @return true if the player is set to repeat the current playlist, else false
+     */
+    synchronized AtomicBoolean getRepeatPlaylist() {
+        return repeatPlaylist;
+    }
+
+    /**
+     * Sets whether or not the current playlist is to be repeated
+     *
+     * @param repeatPlaylist true if the playlist is to be repeated, else false
+     */
+    synchronized void setRepeatPlaylist(AtomicBoolean repeatPlaylist) {
+        this.repeatPlaylist = repeatPlaylist;
+    }
+
+    /**
+     * Returns true if the player is set to repeat the current song, else false
+     *
+     * @return true if the player is set to repeat the current song, else false
+     */
+    synchronized AtomicBoolean getRepeatSong() {
+        return repeatSong;
+    }
+
+    /**
+     * Sets whether or not the current song is to be repeated
+     *
+     * @param repeatSong true if the song is to be repeated, else false
+     */
+    synchronized void setRepeatSong(AtomicBoolean repeatSong) {
+        this.repeatSong = repeatSong;
     }
 }
