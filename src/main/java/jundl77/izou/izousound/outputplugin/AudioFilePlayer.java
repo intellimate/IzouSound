@@ -5,6 +5,7 @@ import org.intellimate.izou.events.EventModel;
 import org.intellimate.izou.sdk.Context;
 import org.intellimate.izou.sdk.frameworks.music.player.Playlist;
 import org.intellimate.izou.sdk.frameworks.music.player.TrackInfo;
+import org.intellimate.izou.sdk.frameworks.music.player.template.CommandHandler;
 import org.intellimate.izou.sdk.frameworks.music.player.template.Player;
 import org.intellimate.izou.sdk.frameworks.music.resources.PlaylistResource;
 import org.intellimate.izou.sdk.frameworks.music.resources.TrackInfoResource;
@@ -28,11 +29,11 @@ public class AudioFilePlayer extends Player {
      * @param context The context of the OutputPlugin
      */
     public AudioFilePlayer(Context context) {
-        super(context, , false, false, true, true, true, true);
+        super(context, , true, true, true, true, true, true);
         this.context = context;
         this.soundEngine = new SoundEngine(context, this);
 
-        //commandHandler for advanced functionality
+        CommandHandler commandHandler = new CommandHandler();
     }
 
     /**
@@ -53,12 +54,20 @@ public class AudioFilePlayer extends Player {
     }
 
     private void waitForReady() {
-        while (soundEngine.getState() == null || !soundEngine.getState().equals(SoundEngine.PLAYING_STATE)) {
+        int sleepCounter = 0;
+        while ((soundEngine.getState() == null || !soundEngine.getState().equals(SoundEngine.PLAYING_STATE))
+                && sleepCounter < 50) {
             try {
                 Thread.sleep(100);
+                sleepCounter++;
             } catch (InterruptedException e) {
                 context.getLogger().error("Error while sleeping", e);
             }
+        }
+
+        if (sleepCounter >= 50) {
+            context.getLogger().error("Player timed out");
+            stop();
         }
     }
 
