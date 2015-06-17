@@ -7,6 +7,7 @@ import org.intellimate.izou.sdk.frameworks.music.player.Playlist;
 import org.intellimate.izou.sdk.frameworks.music.player.TrackInfo;
 import org.intellimate.izou.sdk.frameworks.music.player.template.CommandHandler;
 import org.intellimate.izou.sdk.frameworks.music.player.template.Player;
+import org.intellimate.izou.sdk.frameworks.music.resources.CommandResource;
 import org.intellimate.izou.sdk.frameworks.music.resources.PlaylistResource;
 import org.intellimate.izou.sdk.frameworks.music.resources.TrackInfoResource;
 
@@ -33,7 +34,22 @@ public class AudioFilePlayer extends Player {
         this.context = context;
         this.soundEngine = new SoundEngine(context, this);
 
-        CommandHandler commandHandler = new CommandHandler();
+        CommandHandler commandHandler = createCommandHandler();
+        commandHandler.setNextPreviousController(command -> {
+            if (command.equals(CommandResource.NEXT)) {
+                nextSound();
+            } else if (command.equals(CommandResource.PREVIOUS)) {
+                previousSound();
+            }
+        });
+        commandHandler.setPlayPauseController(command -> {
+            if (command.equals(CommandResource.PLAY)) {
+                resume();
+            } else if (command.equals(CommandResource.PAUSE)) {
+                pause();
+            }
+        });
+        commandHandler.setTrackSelectorController(this::jumpToTrackInfo);
     }
 
     /**
@@ -115,6 +131,19 @@ public class AudioFilePlayer extends Player {
      */
     public void restartSound() {
         soundEngine.restartFile();
+    }
+
+    /**
+     * Jumps to the track info in the playlist if it is found
+     *
+     * @param trackInfo the track info to jump to and play
+     */
+    public void jumpToTrackInfo(TrackInfo trackInfo) {
+        try {
+            soundEngine.jumpToFile(trackInfo);
+        } catch (IllegalArgumentException e) {
+            context.getLogger().error("TrackInfo not found", e);
+        }
     }
 
     /**

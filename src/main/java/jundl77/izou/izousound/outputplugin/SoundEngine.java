@@ -6,6 +6,7 @@ import javazoom.jl.player.advanced.PlaybackEvent;
 import javazoom.jl.player.advanced.PlaybackListener;
 import org.intellimate.izou.sdk.Context;
 import org.intellimate.izou.sdk.frameworks.music.player.Playlist;
+import org.intellimate.izou.sdk.frameworks.music.player.TrackInfo;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -89,7 +90,7 @@ class SoundEngine {
                 context.getLogger().debug("Resumed sound");
             }
         } else {
-            throw new IllegalStateException("sound is not paused, so it cannot be resumed");
+            throw new IllegalStateException("Sound is not paused, so it cannot be resumed");
         }
     }
 
@@ -119,7 +120,7 @@ class SoundEngine {
     }
 
     /**
-     * Stops playback for entire session, the task will go back to the blocking-queue
+     * Stops playback for entire session
      */
     void stopSession() {
         if (getState() != null) {
@@ -141,6 +142,21 @@ class SoundEngine {
             player.stop();
             state = PAUSED_STATE;
             context.getLogger().debug("Paused sound");
+        }
+    }
+
+    /**
+     * Jumps to the track info in the playlist if it is found
+     *
+     * @param trackInfo the track info to jump to and play
+     * @throws IllegalArgumentException thrown if index is not in bounds of playlist
+     */
+    void jumpToFile(TrackInfo trackInfo) throws IllegalArgumentException {
+        if (playlist.getQueue().contains(trackInfo)) {
+            playIndex.set(playlist.getQueue().indexOf(trackInfo) - 1);
+            stopSound();
+        } else {
+            throw new IllegalArgumentException("TrackInfo:" + trackInfo.getName() + " is not in the current playlist.");
         }
     }
 
