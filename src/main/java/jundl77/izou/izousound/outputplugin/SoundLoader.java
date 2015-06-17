@@ -114,11 +114,11 @@ class SoundLoader {
      * @param playlist The playlist that contains the track info (inside the soundInfo)
      * @param soundInfo The soundInfo for which to get its meta data
      */
-    void getMetaData(Playlist playlist, SoundInfo soundInfo) {
+    Playlist getMetaData(Playlist playlist, SoundInfo soundInfo) {
         soundInfo.setFramesPerSecond(1);
 
         if (soundInfo.getPath() == null || soundInfo.getHasMetaData()) {
-            return;
+            return playlist;
         }
 
         try {
@@ -154,13 +154,17 @@ class SoundLoader {
                             .flatMap(unused -> finalTrackInfo.getAlbumCoverFormat()).orElse(null),
                     trackInfo.getData().orElse(null), year, genre, trackInfo.getBmp().orElse(null), duration);
 
-            playlist.update(soundInfo.getTrackInfo(), trackInfo);
+            Playlist newPlaylist = playlist.update(soundInfo.getTrackInfo(), trackInfo);
 
             soundInfo.setTrackInfo(trackInfo);
             soundInfo.setFramesPerSecond(framesPerSecond);
             soundInfo.setHasMetaData(true);
+
+            return newPlaylist;
         } catch (IOException | UnsupportedTagException | InvalidDataException e) {
             context.getLogger().error("Error getting meta data for sound file: " + soundInfo.getPath(), e);
         }
+
+        return playlist;
     }
 }

@@ -368,10 +368,10 @@ class SoundEngine {
      */
     private void updatePlaylist(SoundIdentity soundId) {
         if (shuffle.get()) {
-            soundLoader.getMetaData(shuffeledPlaylist, soundId.getSoundInfo());
+            shuffeledPlaylist = soundLoader.getMetaData(shuffeledPlaylist, soundId.getSoundInfo());
             shuffeledPlaylist.setNewPosition(playIndex.get());
         } else {
-            soundLoader.getMetaData(playlist, soundId.getSoundInfo());
+            playlist = soundLoader.getMetaData(playlist, soundId.getSoundInfo());
             playlist.setNewPosition(playIndex.get());
         }
 
@@ -460,10 +460,10 @@ class SoundEngine {
             shuffeledSoundFileMap = soundLoader.convertFromPlaylist(shuffeledPlaylist);
 
             id = shuffeledSoundFileMap.get(playIndex.intValue());
-            soundLoader.getMetaData(shuffeledPlaylist, id.getSoundInfo());
+            shuffeledPlaylist = soundLoader.getMetaData(shuffeledPlaylist, id.getSoundInfo());
         } else {
             id = soundFileMap.get(playIndex.intValue());
-            soundLoader.getMetaData(this.playlist, id.getSoundInfo());
+            this.playlist = soundLoader.getMetaData(this.playlist, id.getSoundInfo());
         }
 
         try {
