@@ -136,6 +136,7 @@ class SoundEngine {
         } else {
             context.getLogger().warn("State is null, quitting");
         }
+        audioFilePlayer.stopMusicPlayback();
     }
 
     /**
