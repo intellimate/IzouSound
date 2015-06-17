@@ -31,7 +31,7 @@ public class AudioFilePlayer extends Player {
      * @param context The context of the OutputPlugin
      */
     public AudioFilePlayer(Context context) {
-        super(context, ID, true, true, true, true, true, true, true);
+        super(context, ID, false, true, true, true, true, true, true);
         this.context = context;
         this.soundEngine = new SoundEngine(context, this);
 
@@ -51,6 +51,12 @@ public class AudioFilePlayer extends Player {
             }
         });
         commandHandler.setTrackSelectorController(this::jumpToTrackInfo);
+        commandHandler.setVolumeChangeableController(volume -> {
+
+        });
+        commandHandler.setJumpProgressController(progress -> {
+
+        });
     }
 
     /**
