@@ -17,9 +17,9 @@ public class Debug {
         //list.add(URI.create("http://ia902508.us.archive.org/5/items/testmp3testfile/mpthreetest.mp3").toURL());
         PlaylistGenerator playlistGenerator = new PlaylistGenerator(null);
         Playlist playlist = playlistGenerator.createRecursiveSearchFilePlaylist(list);
-        a.setRepeatPlaylist(true);
+        a.setShuffle(true);
         a.playPlaylist(playlist);
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 2; i++) {
             try {
                 Thread.sleep(5000);
             } catch (InterruptedException e) {

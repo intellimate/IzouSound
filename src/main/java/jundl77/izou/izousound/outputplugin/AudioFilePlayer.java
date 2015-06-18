@@ -52,7 +52,7 @@ public class AudioFilePlayer extends Player {
         });
         commandHandler.setTrackSelectorController(this::jumpToTrackInfo);
         commandHandler.setVolumeChangeableController(volume -> {
-
+            setVolume(volume.getVolume());
         });
         commandHandler.setJumpProgressController(progress -> {
 
@@ -183,8 +183,26 @@ public class AudioFilePlayer extends Player {
      *
      * @param currentSound the current sound to set, null if none is playing
      */
-    public void setCurrentSound(SoundIdentity currentSound) {
+    void setCurrentSound(SoundIdentity currentSound) {
         this.currentSound = currentSound;
+        if (currentSound != null && getCurrentPlaylist() != null) {
+            updatePlayInfo(currentSound.getSoundInfo().getTrackInfo());
+        } else if (getCurrentPlaylist() != null) {
+            updatePlayInfo(null); // Calls the trackInfo method because it is the most specific
+        }
+    }
+
+    /**
+     * Sets the current playlist, null if none is playing
+     *
+     * @param playlist the current playlist to set, null if none is playing
+     */
+    void setCurrentPlaylist(Playlist playlist) {
+        if (playlist != null) {
+            updatePlayInfo(playlist);
+        } else {
+            updatePlayInfo((Playlist) null);
+        }
     }
 
     /**

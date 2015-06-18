@@ -136,6 +136,8 @@ class SoundEngine {
         } else {
             context.getLogger().warn("State is null, quitting");
         }
+        audioFilePlayer.setCurrentSound(null);
+        audioFilePlayer.setCurrentPlaylist(null);
         audioFilePlayer.stopMusicPlayback();
     }
 
@@ -370,9 +372,11 @@ class SoundEngine {
         if (shuffle.get()) {
             shuffeledPlaylist = soundLoader.getMetaData(shuffeledPlaylist, soundId.getSoundInfo());
             shuffeledPlaylist.setNewPosition(playIndex.get());
+            audioFilePlayer.setCurrentPlaylist(shuffeledPlaylist);
         } else {
             playlist = soundLoader.getMetaData(playlist, soundId.getSoundInfo());
             playlist.setNewPosition(playIndex.get());
+            audioFilePlayer.setCurrentPlaylist(playlist);
         }
 
         audioFilePlayer.setCurrentSound(soundId);
@@ -461,9 +465,11 @@ class SoundEngine {
 
             id = shuffeledSoundFileMap.get(playIndex.intValue());
             shuffeledPlaylist = soundLoader.getMetaData(shuffeledPlaylist, id.getSoundInfo());
+            audioFilePlayer.setCurrentPlaylist(shuffeledPlaylist);
         } else {
             id = soundFileMap.get(playIndex.intValue());
             this.playlist = soundLoader.getMetaData(this.playlist, id.getSoundInfo());
+            audioFilePlayer.setCurrentPlaylist(this.playlist);
         }
 
         try {
