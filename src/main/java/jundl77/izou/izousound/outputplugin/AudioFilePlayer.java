@@ -188,7 +188,7 @@ public class AudioFilePlayer extends Player {
         if (currentSound != null && getCurrentPlaylist() != null) {
             updatePlayInfo(currentSound.getSoundInfo().getTrackInfo());
         } else if (getCurrentPlaylist() != null) {
-            updatePlayInfo(null); // Calls the trackInfo method because it is the most specific
+            updatePlayInfo((TrackInfo) null); // Calls the trackInfo method because it is the most specific
         }
     }
 
