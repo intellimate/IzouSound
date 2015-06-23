@@ -43,9 +43,14 @@ public class PlaylistGenerator {
      * @param stopTime the stop time of the sound files  (in milliseconds)
      */
     public Playlist createFilePlaylist(List<String> soundFilePaths, int startTime, int stopTime) {
+        if (soundFilePaths == null) {
+            return null;
+        }
+
         context.getLogger().debug("Creating file based playlist..");
         List<TrackInfo> trackInfos = soundFilePaths
                 .stream()
+                .filter(p -> p != null)
                 .map(path -> trackInfoGenerator.generatFileTrackInfo(path, startTime, stopTime))
                 .collect(Collectors.toList());
         context.getLogger().debug("Found " + trackInfos.size() + " items");
@@ -74,10 +79,14 @@ public class PlaylistGenerator {
      * @param paths the list of paths to sound files that should be turned into a playlist
      */
     public Playlist createRecursiveSearchFilePlaylist(List<String> paths) {
+        if (paths == null) {
+            return null;
+        }
+
         context.getLogger().debug("Doing recursive search for more sound files");
         List<TrackInfo> trackInfos = new ArrayList<>();
         for (String filePath : paths) {
-            if (!new File(filePath).exists()) {
+            if (filePath != null && !new File(filePath).exists()) {
                 context.getLogger().error(filePath + " does not exists - Unable to play sound");
             } else {
                 recursiveSoundFileSearch(trackInfos, filePath);
@@ -101,6 +110,10 @@ public class PlaylistGenerator {
      * @param stopTime the stop time of the sound files  (in milliseconds)
      */
     public Playlist createURLPlaylist(List<URL> soundURLs, int startTime, int stopTime) {
+        if (soundURLs == null) {
+            return null;
+        }
+
         context.getLogger().debug("Creating URL based playlist..");
         List<TrackInfo> trackInfos = soundURLs
                 .stream()
@@ -132,6 +145,10 @@ public class PlaylistGenerator {
      * @return a new playlist containing playlist2 appended to the end of playlist1
      */
     public Playlist combinePlaylist(Playlist playlist1, Playlist playlist2) {
+        if (playlist1 == null || playlist2 == null) {
+            return null;
+        }
+
         List<TrackInfo> trackInfos = playlist1.getQueue();
         trackInfos.addAll(playlist2.getQueue());
         return new Playlist(trackInfos);

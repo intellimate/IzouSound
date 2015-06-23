@@ -28,8 +28,9 @@ public class SoundAddOn extends AddOn {
 
     @Override
     public Activator[] registerActivator() {
-        //AudioPlayerController audioPlayerController = new AudioPlayerController(getContext(),audioFilePlayer);
-        return null;
+        Activator[] activators = new Activator[1];
+        activators[0] = new AudioPlayerController(getContext(), audioFilePlayer);
+        return activators;
     }
 
     @Override

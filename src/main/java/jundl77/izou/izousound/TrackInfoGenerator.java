@@ -27,6 +27,10 @@ public class TrackInfoGenerator {
      * @return a new TrackInfo generated based on the above data
      */
     public TrackInfo generatFileTrackInfo(String path, int startTime, int endTime) {
+        if (path == null) {
+            return null;
+        }
+
         String data = PlaylistGenerator.FILE_TYPE + PlaylistGenerator.DATA_SEPERATOR + path +
                 PlaylistGenerator.DATA_SEPERATOR + startTime + PlaylistGenerator.DATA_SEPERATOR + endTime;
         String[] pathParts = path.split(File.separator);
@@ -43,6 +47,10 @@ public class TrackInfoGenerator {
      * @return a new TrackInfo generated based on the above data
      */
     public TrackInfo generatURLTrackInfo(URL url, int startTime, int endTime) {
+        if (url == null) {
+            return null;
+        }
+
         String data = PlaylistGenerator.URL_TYPE + PlaylistGenerator.DATA_SEPERATOR + url.toExternalForm() +
                 PlaylistGenerator.DATA_SEPERATOR + startTime + PlaylistGenerator.DATA_SEPERATOR + endTime;
         String[] pathParts = url.toExternalForm().split("/");
