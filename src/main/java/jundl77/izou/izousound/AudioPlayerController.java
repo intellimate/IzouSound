@@ -14,8 +14,10 @@ import org.intellimate.izou.sdk.frameworks.music.player.template.PlayerControlle
  */
 public class AudioPlayerController extends PlayerController {
     public static final String ID = AudioPlayerController.class.getCanonicalName();
-    private Playlist playlist;
-    private TrackInfo trackInfo;
+    private static final Object lock = new Object();
+    private static boolean play = false;
+    private static Playlist playlist;
+    private static TrackInfo trackInfo;
 
     /**
      * Creates a new AudioPlayerController. It can be used to play sound from IzouSound
@@ -35,14 +37,26 @@ public class AudioPlayerController extends PlayerController {
      */
     @Override
     public void activatorStarts() {
-        if (playlist != null) {
-            startPlaying(playlist);
-        } else if (trackInfo != null) {
-            startPlaying(trackInfo);
-        }
+        synchronized (lock) {
+            while (!play) {
+                try {
+                    lock.wait();
+                } catch (InterruptedException e) {
+                    error("IzouSound music thread interrupted", e);
+                }
+            }
 
-        playlist = null;
-        trackInfo = null;
+            if (playlist != null) {
+                startPlaying(playlist);
+            } else if (trackInfo != null) {
+                startPlaying(trackInfo);
+            }
+
+            playlist = null;
+            trackInfo = null;
+
+            play = false;
+        }
     }
 
     /**
@@ -51,9 +65,13 @@ public class AudioPlayerController extends PlayerController {
      * @param playlist the playlist to play, it should have been created by the {@link PlaylistGenerator}
      */
     public void playPlaylist(Playlist playlist) {
-        this.playlist = playlist;
-        this.trackInfo = null;
-        activatorStarts();
+        synchronized (lock) {
+            AudioPlayerController.playlist = playlist;
+            trackInfo = null;
+
+            play = true;
+            lock.notifyAll();
+        }
     }
 
     /**
@@ -62,8 +80,12 @@ public class AudioPlayerController extends PlayerController {
      * @param trackInfo the track info to play, it should have been created by the {@link TrackInfoGenerator}
      */
     public void playTrackInfo(TrackInfo trackInfo) {
-        this.playlist = null;
-        this.trackInfo = trackInfo;
-        activatorStarts();
+        synchronized (lock) {
+            playlist = null;
+            AudioPlayerController.trackInfo = trackInfo;
+
+            play = true;
+            lock.notifyAll();
+        }
     }
 }
