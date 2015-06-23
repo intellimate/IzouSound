@@ -64,7 +64,7 @@ public class AudioPlayerController extends PlayerController {
      *
      * @param playlist the playlist to play, it should have been created by the {@link PlaylistGenerator}
      */
-    public void playPlaylist(Playlist playlist) {
+    public static void playPlaylist(Playlist playlist) {
         synchronized (lock) {
             AudioPlayerController.playlist = playlist;
             trackInfo = null;
@@ -79,7 +79,7 @@ public class AudioPlayerController extends PlayerController {
      *
      * @param trackInfo the track info to play, it should have been created by the {@link TrackInfoGenerator}
      */
-    public void playTrackInfo(TrackInfo trackInfo) {
+    public static void playTrackInfo(TrackInfo trackInfo) {
         synchronized (lock) {
             playlist = null;
             AudioPlayerController.trackInfo = trackInfo;
