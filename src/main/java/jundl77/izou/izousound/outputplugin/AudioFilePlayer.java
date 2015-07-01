@@ -189,6 +189,7 @@ public class AudioFilePlayer extends Player {
             updatePlayInfo(currentSound.getSoundInfo().getTrackInfo());
         } else if (getCurrentPlaylist() != null) {
             updatePlayInfo((TrackInfo) null);
+            stopMusicPlayback();
         }
     }
 

@@ -6,6 +6,9 @@ import org.intellimate.izou.sdk.frameworks.music.player.Playlist;
 import org.intellimate.izou.sdk.frameworks.music.player.TrackInfo;
 import org.intellimate.izou.sdk.frameworks.music.player.template.PlayerController;
 
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
 /**
  * The AudioPlayerController should be used to start a new playing session. If it is not used, the sound playback will
  * be denied. Call {@link #playPlaylist(Playlist)} or {@link #playTrackInfo(TrackInfo)} to play. Playlists and
@@ -14,8 +17,7 @@ import org.intellimate.izou.sdk.frameworks.music.player.template.PlayerControlle
  */
 public class AudioPlayerController extends PlayerController {
     public static final String ID = AudioPlayerController.class.getCanonicalName();
-    private static final Object lock = new Object();
-    private static boolean play = false;
+    private BlockingQueue<Object> requestBlockingQueue;
     private static Playlist playlist;
     private static TrackInfo trackInfo;
 
@@ -29,6 +31,7 @@ public class AudioPlayerController extends PlayerController {
         super(context, ID, player);
         playlist = null;
         trackInfo = null;
+        requestBlockingQueue = new LinkedBlockingQueue<>();
     }
 
     /**
@@ -37,25 +40,16 @@ public class AudioPlayerController extends PlayerController {
      */
     @Override
     public void activatorStarts() {
-        synchronized (lock) {
-            while (!play) {
-                try {
-                    lock.wait();
-                } catch (InterruptedException e) {
-                    error("IzouSound music thread interrupted", e);
-                }
-            }
+        try {
+            requestBlockingQueue.take();
+        } catch (InterruptedException e) {
+            error("IzouSound was interrupted.", e);
+        }
 
-            if (playlist != null) {
-                startPlaying(playlist);
-            } else if (trackInfo != null) {
-                startPlaying(trackInfo);
-            }
-
-            playlist = null;
-            trackInfo = null;
-
-            play = false;
+        if (playlist != null) {
+            startPlaying(playlist);
+        } else if (trackInfo != null) {
+            startPlaying(trackInfo);
         }
     }
 
@@ -64,14 +58,12 @@ public class AudioPlayerController extends PlayerController {
      *
      * @param playlist the playlist to play, it should have been created by the {@link PlaylistGenerator}
      */
-    public static void playPlaylist(Playlist playlist) {
-        synchronized (lock) {
-            AudioPlayerController.playlist = playlist;
-            trackInfo = null;
+    public void playPlaylist(Playlist playlist) {
+        AudioPlayerController.playlist = playlist;
+        trackInfo = null;
 
-            play = true;
-            lock.notifyAll();
-        }
+        // Signal the activator that a new request has arrived (wake up the thread)
+        requestBlockingQueue.add(new Object());
     }
 
     /**
@@ -79,13 +71,11 @@ public class AudioPlayerController extends PlayerController {
      *
      * @param trackInfo the track info to play, it should have been created by the {@link TrackInfoGenerator}
      */
-    public static void playTrackInfo(TrackInfo trackInfo) {
-        synchronized (lock) {
-            playlist = null;
-            AudioPlayerController.trackInfo = trackInfo;
+    public void playTrackInfo(TrackInfo trackInfo) {
+        playlist = null;
+        AudioPlayerController.trackInfo = trackInfo;
 
-            play = true;
-            lock.notifyAll();
-        }
+        // Signal the activator that a new request has arrived (wake up the thread)
+        requestBlockingQueue.add(new Object());
     }
 }
