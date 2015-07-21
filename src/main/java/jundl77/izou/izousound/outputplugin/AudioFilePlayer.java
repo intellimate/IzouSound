@@ -12,9 +12,11 @@ import org.intellimate.izou.sdk.frameworks.music.resources.PlaylistResource;
 import org.intellimate.izou.sdk.frameworks.music.resources.TrackInfoResource;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * The {@code AudioFilePlayer} is a wrapper for the {@code SoundEngine}. It controls the sound-engine.
@@ -286,27 +288,37 @@ public class AudioFilePlayer extends Player {
 
     @Override
     public void play(EventModel eventModel) {
-        Optional<Playlist> playlistTemp = PlaylistResource.getPlaylist(eventModel);
-        Optional<TrackInfo> trackInfoTemp = TrackInfoResource.getTrackInfo(eventModel);
-        Playlist playlist = null;
+        Playlist playlist = PlaylistResource.getPlaylist(eventModel).orElse(new Playlist(new ArrayList<>()));
+        Playlist playlist1 = TrackInfoResource.getTrackInfo(eventModel)
+                .map(trackInoTemp -> new Playlist(Collections.singletonList(trackInoTemp)))
+                .orElse(new Playlist(new ArrayList<>()));
 
-        if (playlistTemp.isPresent()) {
-            playlist = playlistTemp.get();
-        }
+        PlaylistGenerator generator = new PlaylistGenerator(context);
+        playlist = generator.combinePlaylist(playlist, playlist1);
 
-        if (trackInfoTemp.isPresent()) {
-            TrackInfo trackInfo = trackInfoTemp.get();
-            List<TrackInfo> trackInfoList = new ArrayList<>();
-            trackInfoList.add(trackInfo);
-            Playlist newPlaylist = new Playlist(trackInfoList);
-
-            if (playlist != null) {
-                PlaylistGenerator generator = new PlaylistGenerator(context);
-                playlist = generator.combinePlaylist(playlist, newPlaylist);
+        Function<TrackInfo, TrackInfo> convertToAddonData = trackInfo -> {
+            if (trackInfo.getData().filter(data -> data.contains(PlaylistGenerator.DATA_SEPERATOR))
+                    .isPresent()) {
+                return trackInfo;
             } else {
-                playlist = newPlaylist;
+                String data = PlaylistGenerator.FILE_TYPE + PlaylistGenerator.DATA_SEPERATOR +
+                        trackInfo.getData().orElse("null") + PlaylistGenerator.DATA_SEPERATOR + "-1" +
+                        PlaylistGenerator.DATA_SEPERATOR + "-1";
+                return new TrackInfo(trackInfo.getName().orElse(null), trackInfo.getArtist().orElse(null),
+                        trackInfo.getAlbum().orElse(null), trackInfo.getAlbumCover().orElse(null),
+                        trackInfo.getAlbumCover().flatMap(unused -> trackInfo.getAlbumCoverFormat())
+                                .orElse(null), data, trackInfo.getYear().orElse(null),
+                        trackInfo.getGenre().orElse(null), trackInfo.getBmp().orElse(null),
+                        trackInfo.getDuration().orElse(null));
             }
-        }
+        };
+
+        List<TrackInfo> updatedPlaylist = playlist.getQueue()
+                .stream()
+                .map(convertToAddonData)
+                .collect(Collectors.toList());
+
+        playlist = new Playlist(updatedPlaylist);
 
         playPlaylist(playlist);
     }
