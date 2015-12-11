@@ -149,9 +149,11 @@ public class PlaylistGenerator {
             return null;
         }
 
-        List<TrackInfo> trackInfos = playlist1.getQueue();
-        trackInfos.addAll(playlist2.getQueue());
-        return new Playlist(trackInfos);
+        List<TrackInfo> toMerge1 = playlist1.getQueue();
+        List<TrackInfo> toMerge2 = playlist2.getQueue();
+        ArrayList<TrackInfo> merged = new ArrayList<>(toMerge1);
+        merged.addAll(toMerge2);
+        return new Playlist(merged);
     }
 
     /**
