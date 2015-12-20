@@ -16,7 +16,7 @@ class SoundInfo {
     private String path;
     private URL url;
     private int startTime;
-    private int stopTime;
+    private int durationTime;
     private long framesPerSecond;
     private TrackInfo trackInfo;
     private boolean hasMetaData;
@@ -47,12 +47,12 @@ class SoundInfo {
      * @param trackInfo the track info around which to base the sound info
      * @param path the path to the sound file, if it is a sound file
      * @param startTime the start time of the sound file (in milliseconds), if -1 it starts from the beginning
-     * @param stopTime the stop time of the sound file (in milliseconds), if -1 it stops at the end
+     * @param durationTime the duration of the sound file (in milliseconds), if -1 it stops at the end
      */
-    public SoundInfo(TrackInfo trackInfo, String path, int startTime, int stopTime) {
+    public SoundInfo(TrackInfo trackInfo, String path, int startTime, int durationTime) {
         this.trackInfo = trackInfo;
         this.startTime = startTime;
-        this.stopTime = stopTime;
+        this.durationTime = durationTime;
         this.url = null;
         this.path = path;
         this.framesPerSecond = -1;
@@ -65,12 +65,12 @@ class SoundInfo {
      * @param trackInfo the track info around which to base the sound info
      * @param url the url to the sound on the internet, if it is on the internet (has to be http, not https)
      * @param startTime the start time of the sound file (in milliseconds), if -1 it starts from the beginning
-     * @param stopTime the stop time of the sound file (in milliseconds), if -1 it stops at the end
+     * @param durationTime the duration of the sound file (in milliseconds), if -1 it stops at the end
      */
-    public SoundInfo(TrackInfo trackInfo, URL url, int startTime, int stopTime) {
+    public SoundInfo(TrackInfo trackInfo, URL url, int startTime, int durationTime) {
         this.trackInfo = trackInfo;
         this.startTime = startTime;
-        this.stopTime = stopTime;
+        this.durationTime = durationTime;
         this.url = url;
         this.path = null;
         this.framesPerSecond = -1;
@@ -104,6 +104,11 @@ class SoundInfo {
         return trackInfo;
     }
 
+    /**
+     * Gets the name of the sound info if it has one
+     *
+     * @return the name of the sound info if it has one
+     */
     public String getName() {
         if (trackInfo.getName().isPresent()) {
             return trackInfo.getName().get();
@@ -112,7 +117,12 @@ class SoundInfo {
         }
     }
 
-    public long getDuration() {
+    /**
+     * Gets the full length duration of the sound info (how long it actually is, not what length is has been clipped to)
+     *
+     * @return the full length duration of the sound info (how long it actually is, not what length is has been clipped to)
+     */
+    public long getFullLengthDuration() {
         if (trackInfo.getDuration().isPresent()) {
             return trackInfo.getDuration().get() / 1000;
         } else {
@@ -144,8 +154,8 @@ class SoundInfo {
      *
      * @return the stop time of the sound, -1 if not specified
      */
-    public int getStopTime() {
-        return stopTime;
+    public int getDurationTime() {
+        return durationTime;
     }
 
     /**
@@ -180,8 +190,8 @@ class SoundInfo {
      *
      * @param stopTime the stop time of the sound
      */
-    public void setStopTime(int stopTime) {
-        this.stopTime = stopTime;
+    public void setDurationTime(int stopTime) {
+        this.durationTime = stopTime;
     }
 
     /**

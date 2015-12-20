@@ -255,6 +255,8 @@ class SoundEngine {
      * Plays the sound at {@code path}
      *
      * @param soundId The id of the sound to be played
+     * @param startFrame The frame where the playback should start at
+     * @param endFrame The frame where the playback should stop at
      * @throws java.lang.IndexOutOfBoundsException thrown if start or end time are out of bounds (-1 not included)
      */
     private void playSoundFile(SoundIdentity soundId, int startFrame, int endFrame) {
@@ -388,8 +390,8 @@ class SoundEngine {
 
         // Gets the duration that the sound in milliseconds
         int duration;
-        if (soundId.getSoundInfo().getDuration() != -1) {
-            duration = (int) soundId.getSoundInfo().getDuration() * 1000;
+        if (soundId.getSoundInfo().getFullLengthDuration() != -1) {
+            duration = (int) soundId.getSoundInfo().getFullLengthDuration() * 1000;
         } else {
             duration = Integer.MAX_VALUE;
             context.getLogger().warn("Unable to get duration of " + soundId.getSoundInfo().getName() +
@@ -404,8 +406,8 @@ class SoundEngine {
             frameDuration = Integer.MAX_VALUE;
         } else {
             framesPerSecond = (int)soundId.getSoundInfo().getFramesPerSecond();
-            if (soundId.getSoundInfo().getDuration() != -1) {
-                frameDuration = (int)(soundId.getSoundInfo().getDuration() * framesPerSecond);
+            if (soundId.getSoundInfo().getFullLengthDuration() != -1) {
+                frameDuration = (int)(soundId.getSoundInfo().getFullLengthDuration() * framesPerSecond);
             } else {
                 frameDuration = Integer.MAX_VALUE;
             }
@@ -424,12 +426,12 @@ class SoundEngine {
         }
 
         // Checks if end time exists
-        if (soundId.getSoundInfo().getStopTime() == -1) {
+        if (soundId.getSoundInfo().getDurationTime() == -1) {
             startEndFrames[1] = frameDuration;
-            soundId.getSoundInfo().setStopTime((int) (soundId.getSoundInfo().getDuration() * 1000));
-        } else if (soundId.getSoundInfo().getStopTime() >= 0
-                && soundId.getSoundInfo().getStopTime() <= duration) {
-            startEndFrames[1] = soundId.getSoundInfo().getStopTime() / 1000 * framesPerSecond;
+            soundId.getSoundInfo().setDurationTime((int) (soundId.getSoundInfo().getFullLengthDuration() * 1000));
+        } else if (soundId.getSoundInfo().getDurationTime() >= 0
+                && soundId.getSoundInfo().getDurationTime() <= duration) {
+            startEndFrames[1] = soundId.getSoundInfo().getDurationTime() / 1000 * framesPerSecond;
         } else {
             outOfBoundsError = true;
             throw new IndexOutOfBoundsException("end-time out of bounds");
@@ -457,10 +459,7 @@ class SoundEngine {
         this.playlist = playlist;
         SoundIdentity id;
         if (shuffle.get()) {
-            long seed = System.nanoTime();
-            List<TrackInfo> trackInfos = new ArrayList<>(playlist.getQueue());
-            Collections.shuffle(trackInfos, new Random(seed));
-            shuffeledPlaylist = new Playlist(trackInfos);
+            shuffeledPlaylist = playlist.shuffle();
             shuffeledSoundFileMap = soundLoader.convertFromPlaylist(shuffeledPlaylist);
 
             id = shuffeledSoundFileMap.get(playIndex.intValue());
@@ -509,10 +508,7 @@ class SoundEngine {
         this.shuffle = shuffle;
 
         if (shuffle.get() && playlist != null) {
-            long seed = System.nanoTime();
-            List<TrackInfo> trackInfos = new ArrayList<>(playlist.getQueue());
-            Collections.shuffle(trackInfos, new Random(seed));
-            shuffeledPlaylist = new Playlist(trackInfos);
+            shuffeledPlaylist = playlist.shuffle();
             shuffeledSoundFileMap = soundLoader.convertFromPlaylist(shuffeledPlaylist);
         }
     }

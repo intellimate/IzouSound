@@ -66,6 +66,7 @@ class SoundLoader {
 
                 // See if the track info contains a file or a url, and transform it into a sound info
                 parts = data.split(PlaylistGenerator.DATA_SEPERATOR);
+
                 if (parts[0].equals(PlaylistGenerator.FILE_TYPE) && new File(parts[1]).exists()) {
                     soundInfo = new SoundInfo(trackInfo, parts[1]);
                 } else if (parts[0].equals(PlaylistGenerator.URL_TYPE)) {
@@ -88,20 +89,22 @@ class SoundLoader {
 
     private void addSoundInfoToMap(HashMap<Integer, SoundIdentity> soundFileMap, SoundInfo soundInfo, String[] parts) {
         int start = -1;
-        int end = -1;
+        int duration = -1;
         try {
             if (parts.length >= 3) {
                 start = Integer.parseInt(parts[2]);
-            } else if (parts.length >= 4) {
-                end = Integer.parseInt(parts[3]);
+            }
+
+            if (parts.length >= 4) {
+                duration = Integer.parseInt(parts[3]);
             }
         } catch (NumberFormatException e) {
-            context.getLogger().error("Start or end value for track info is not an integer, setting to " +
+            context.getLogger().error("Start or end value for track info is not an integer, setting length of track to " +
                     "full length");
         }
 
         soundInfo.setStartTime(start);
-        soundInfo.setStopTime(end);
+        soundInfo.setDurationTime(duration);
 
         SoundIdentity soundIdentity = soundIdentityFactory.make(soundInfo);
         soundFileMap.put(soundIdentity.getId(), soundIdentity);
