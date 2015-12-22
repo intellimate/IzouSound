@@ -1,4 +1,4 @@
-package jundl77.izou.izousound.outputplugin;
+package org.intellimate.izou.addon.izousound.outputplugin;
 
 /**
  * A SoundIdentity is a {@link SoundInfo} matched with its position in the playlist. This is done to make jumping back

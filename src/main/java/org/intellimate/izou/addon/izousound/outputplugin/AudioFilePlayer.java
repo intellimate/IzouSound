@@ -1,6 +1,6 @@
-package jundl77.izou.izousound.outputplugin;
+package org.intellimate.izou.addon.izousound.outputplugin;
 
-import jundl77.izou.izousound.PlaylistGenerator;
+import org.intellimate.izou.addon.izousound.PlaylistGenerator;
 import org.intellimate.izou.events.EventModel;
 import org.intellimate.izou.sdk.Context;
 import org.intellimate.izou.sdk.frameworks.music.player.Playlist;

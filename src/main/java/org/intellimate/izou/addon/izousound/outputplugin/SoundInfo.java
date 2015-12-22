@@ -1,4 +1,4 @@
-package jundl77.izou.izousound.outputplugin;
+package org.intellimate.izou.addon.izousound.outputplugin;
 
 import org.intellimate.izou.sdk.frameworks.music.player.TrackInfo;
 

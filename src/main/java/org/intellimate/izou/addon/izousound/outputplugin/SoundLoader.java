@@ -1,10 +1,10 @@
-package jundl77.izou.izousound.outputplugin;
+package org.intellimate.izou.addon.izousound.outputplugin;
 
 import com.mpatric.mp3agic.ID3v1;
 import com.mpatric.mp3agic.InvalidDataException;
 import com.mpatric.mp3agic.Mp3File;
 import com.mpatric.mp3agic.UnsupportedTagException;
-import jundl77.izou.izousound.PlaylistGenerator;
+import org.intellimate.izou.addon.izousound.PlaylistGenerator;
 import org.intellimate.izou.sdk.Context;
 import org.intellimate.izou.sdk.frameworks.music.player.Playlist;
 import org.intellimate.izou.sdk.frameworks.music.player.TrackInfo;
@@ -86,8 +86,6 @@ class SoundLoader {
 
         return soundFileMap;
     }
-
-    // test push after moving repo
 
     private void addSoundInfoToMap(HashMap<Integer, SoundIdentity> soundFileMap, SoundInfo soundInfo, String[] parts) {
         int start = -1;

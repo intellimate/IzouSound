@@ -1,5 +1,6 @@
-package jundl77.izou.izousound;
+package org.intellimate.izou.addon.izousound;
 
+import org.intellimate.izou.addon.izousound.outputplugin.AudioFilePlayer;
 import org.intellimate.izou.sdk.Context;
 import org.intellimate.izou.sdk.frameworks.music.player.Playlist;
 import org.intellimate.izou.sdk.frameworks.music.player.TrackInfo;
@@ -103,7 +104,7 @@ public class PlaylistGenerator {
      * {@code startTime} and {@code stopTime}. (both in milliseconds)
      * <p>
      *     Playlists generated with this method can be passed to the
-     *     {@link jundl77.izou.izousound.outputplugin.AudioFilePlayer} where they can be played.
+     *     {@link AudioFilePlayer} where they can be played.
      * </p>
      * @param soundURLs the list of paths to sound files that should be turned into a playlist
      * @param startTime the start time of the sound files (in milliseconds)

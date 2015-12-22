@@ -1,4 +1,4 @@
-package jundl77.izou.izousound.outputplugin;
+package org.intellimate.izou.addon.izousound.outputplugin;
 
 import javazoom.jl.decoder.JavaLayerException;
 import javazoom.jl.player.advanced.AdvancedPlayer;

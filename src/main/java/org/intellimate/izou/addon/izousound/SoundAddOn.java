@@ -1,7 +1,7 @@
-package jundl77.izou.izousound;
+package org.intellimate.izou.addon.izousound;
 
 
-import jundl77.izou.izousound.outputplugin.AudioFilePlayer;
+import org.intellimate.izou.addon.izousound.outputplugin.AudioFilePlayer;
 import org.intellimate.izou.sdk.activator.Activator;
 import org.intellimate.izou.sdk.addon.AddOn;
 import org.intellimate.izou.sdk.contentgenerator.ContentGenerator;

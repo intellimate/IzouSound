@@ -1,4 +1,4 @@
-package jundl77.izou.izousound.outputplugin;
+package org.intellimate.izou.addon.izousound.outputplugin;
 
 /**
  *  The SoundIdentityFactory creates sound identities, each time incrementing its index in the playlist, unless

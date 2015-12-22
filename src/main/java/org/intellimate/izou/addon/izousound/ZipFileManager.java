@@ -1,4 +1,4 @@
-package jundl77.izou.izousound;
+package org.intellimate.izou.addon.izousound;
 
 import ro.fortsoft.pf4j.PluginWrapper;
 
