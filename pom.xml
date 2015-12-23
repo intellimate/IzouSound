@@ -11,7 +11,7 @@
     <name>Izou Sound</name>
 
     <properties>
-        <plugin.id>jundl77.izou.izousound</plugin.id>
+        <plugin.id>org.intellimate.izou.addon.izousound</plugin.id>
         <plugin.class>org.intellimate.izou.addon.izousound.ZipFileManager</plugin.class>
         <plugin.version>1.9</plugin.version>
         <plugin.provider>Julian Brendl</plugin.provider>
