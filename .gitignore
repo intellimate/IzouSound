@@ -1,9 +1,21 @@
-# Created by .gitignore support plugin (hsz.mobi)
+# ---------------
+# Folders
+# ---------------
+.idea
 build
 target
-.settings
-.project
-.classpath
-.iml
-IzouAddOn.iml
-.idea
+
+# ---------------
+# Project Files
+# ---------------
+
+*.iml
+
+# ---------------
+# Other
+# ---------------
+
+*.settings
+*.project
+*.classpath
+
