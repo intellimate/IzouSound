@@ -35,7 +35,13 @@ public class TrackInfoGenerator {
                 PlaylistGenerator.DATA_SEPERATOR + startTime + PlaylistGenerator.DATA_SEPERATOR + endTime;
         String[] pathParts = path.split(File.separator);
         String name = pathParts[pathParts.length - 1];
-        return new TrackInfo(name, null, null, null, null, data, null, null, null, -1);
+
+        long duration = -1;
+        if (endTime - startTime > 0) {
+            duration = endTime - startTime;
+        }
+
+        return new TrackInfo(name, null, null, null, null, data, null, null, null, duration);
     }
 
     /**
@@ -55,6 +61,12 @@ public class TrackInfoGenerator {
                 PlaylistGenerator.DATA_SEPERATOR + startTime + PlaylistGenerator.DATA_SEPERATOR + endTime;
         String[] pathParts = url.toExternalForm().split("/");
         String name = pathParts[pathParts.length - 1];
-        return new TrackInfo(name, null, null, null, null, data, null, null, null, -1);
+
+        long duration = -1;
+        if (endTime - startTime > 0) {
+            duration = endTime - startTime;
+        }
+
+        return new TrackInfo(name, null, null, null, null, data, null, null, null, duration);
     }
 }
