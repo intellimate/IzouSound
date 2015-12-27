@@ -7,13 +7,13 @@
     <groupId>org.intellimate.izou.addon.izousound</groupId>
     <artifactId>izousound</artifactId>
     <packaging>jar</packaging>
-    <version>1.9</version>
+    <version>2.0</version>
     <name>Izou Sound</name>
 
     <properties>
         <plugin.id>org.intellimate.izou.addon.izousound</plugin.id>
         <plugin.class>org.intellimate.izou.addon.izousound.ZipFileManager</plugin.class>
-        <plugin.version>1.9</plugin.version>
+        <plugin.version>2.0</plugin.version>
         <plugin.provider>Julian Brendl</plugin.provider>
         <plugin.dependencies/>
 
